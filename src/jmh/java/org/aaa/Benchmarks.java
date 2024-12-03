@@ -4,18 +4,22 @@ package org.aaa;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
 
-public class aBenchmark {
+public class Benchmarks {
 
 	@Benchmark
 	@BenchmarkMode(Mode.AverageTime)
-	public void benchmarkA(ExecutionState state, Blackhole blackhole) {
+	public void benchmarkInts(ExecutionState state, Blackhole blackhole) {
 		blackhole.consume(state.comparisons += MergeSortAugmented.sort(state.intsRandom, state.c));
 	}
 
 	@State(Scope.Benchmark)
 	public static class ExecutionState {
+
 		@Param({"10000", "100000", "1000000"})
 		int n;
 
@@ -36,5 +40,20 @@ public class aBenchmark {
 			comparisons = 0;
 		}
 
+		@TearDown(Level.Iteration)
+		public void tearDown() {
+			File file = new File("test2.md");
+			try {
+				FileWriter fw = new FileWriter(file);
+				fw.append("n: " + n + " comparisons: " + comparisons);
+				fw.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			comparisons = 0;
+		}
+
 	}
+
+
 }

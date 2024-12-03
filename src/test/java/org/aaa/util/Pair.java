@@ -1,4 +1,4 @@
-package org.aaa;
+package org.aaa.util;
 
 public class Pair<L extends Comparable, R extends Comparable> implements Comparable<Pair<L, R>> {
 	private final L left;

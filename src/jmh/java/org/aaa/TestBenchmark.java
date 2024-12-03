@@ -81,7 +81,7 @@ public class TestBenchmark {
 				intsRandomAsc[i] = i;
 
 				// String stuff
-				byte[] bytesRandom = new byte[n];
+				byte[] bytesRandom = new byte[200];
 				random.nextBytes(bytesFixed);
 				random.nextBytes(bytesRandom);
 				stringsLengthN[i] = new String(bytesFixed);

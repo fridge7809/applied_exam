@@ -3,6 +3,7 @@ package org.aaa;
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.constraints.WithNull;
+import org.aaa.util.Pair;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,13 +12,13 @@ import java.util.function.Function;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class MergeSortTest {
+class MergeSortAugmentedTest {
 
 	// Negative test cases
 
 	@Example
 	void shouldThrowWhenInputIsNull(@ForAll @WithNull(value = 1) Integer[] input) {
-		assertThatThrownBy(() -> MergeSort.sort(input)).message().isEqualTo("Array is null or empty");
+		assertThatThrownBy(() -> MergeSortAugmented.sort(input)).message().isEqualTo("Array is null or empty");
 	}
 
 	// Positive cases examples
@@ -27,35 +28,35 @@ class MergeSortTest {
 		// Internal representation in memory of floating point precision numerals may not be exact and prone
 		// to rounding errors.
 		Double[] input = {1.1, 1.2, 1.19, 1.09, 1.10};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).containsExactly(1.09, 1.1, 1.1, 1.19, 1.2);
 	}
 
 	@Example
 	void shouldHandleMixedPositiveAndNegativeIntegers() {
 		Integer[] input = {3, -1, 2, -5, 0};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).containsExactly(-5, -1, 0, 2, 3);
 	}
 
 	@Example
 	void shouldSortBooleans() {
 		Boolean[] input = {false, false, true, false};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).isSorted();
 	}
 
 	@Example
 	void shouldHandleDuplicateElements() {
 		Integer[] input = {5, 1, 3, 3, 2, 5};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).containsExactly(1, 2, 3, 3, 5, 5);
 	}
 
 	@Example
 	void shouldHandleDuplicateUnicodeCharacters() {
 		Character[] input = {'a', 'A', 'a', 'A', 'b', 'B'};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).containsExactly('A', 'A', 'B', 'a', 'a', 'b');
 	}
 
@@ -63,14 +64,14 @@ class MergeSortTest {
 	@Example
 	void shouldHandleAllZeroes() {
 		Byte[] input = {0, 0, 0, 0, 0, 0};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).containsExactly((byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0);
 	}
 
 	@Example
 	void shouldSortArrayWithLargeAndSmallNumbers() {
 		Integer[] input = {Integer.MAX_VALUE, Integer.MIN_VALUE, 0, -1, 1};
-		MergeSort.sort(input);
+		MergeSortAugmented.sort(input);
 		assertThat(input).containsExactly(Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE);
 	}
 
@@ -82,7 +83,7 @@ class MergeSortTest {
 		Pair[] pairs = input.toArray(new Pair[0]);
 		Integer[] rightValues = input.stream().map(Pair::getRight).toArray(Integer[]::new);
 
-		MergeSort.sort(pairs);
+		MergeSortAugmented.sort(pairs);
 
 		for (int i = 0; i < pairs.length - 1; i++) {
 			if (pairs[i].equals(pairs[i + 1])) {
@@ -96,13 +97,13 @@ class MergeSortTest {
 	@Property
 	<T extends Comparable<T>> void sortedArrayShouldContainAllOriginalElements(@ForAll("dataTypesUnderTestProvider") T[] arr) {
 		List<T> objects = Arrays.stream(arr).toList();
-		MergeSort.sort(arr);
+		MergeSortAugmented.sort(arr);
 		assertThat(arr).containsAll(objects);
 	}
 
 	@Property
 	<T extends Comparable<T>> void shouldSortArray(@ForAll("dataTypesUnderTestProvider") T[] arr) {
-		MergeSort.sort(arr);
+		MergeSortAugmented.sort(arr);
 		assertThat(arr).isSorted();
 	}
 
@@ -112,7 +113,7 @@ class MergeSortTest {
 		// while right values remain stable.
 		Pair<Integer, Integer>[] pairs = input.toArray(new Pair[0]); // Specify the type of the Pair
 
-		MergeSort.sort(pairs);
+		MergeSortAugmented.sort(pairs);
 
 		for (int i = 0; i < pairs.length - 1; i++) {
 			if (pairs[i].getLeft().equals(pairs[i + 1].getLeft())) {
@@ -178,44 +179,4 @@ class MergeSortTest {
 				});
 	}
 
-	public static class Pair<L extends Comparable, R extends Comparable> implements Comparable<Pair<L, R>> {
-		private final L left;
-		private final R right;
-
-		public Pair(L left, R right) {
-			this.left = left;
-			this.right = right;
-		}
-
-		public L getLeft() {
-			return left;
-		}
-
-		public R getRight() {
-			return right;
-		}
-
-		@Override
-		public String toString() {
-			return "(" + left + ", " + right + ")";
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Pair<?, ?> pair = (Pair<?, ?>) o;
-			return left.equals(pair.left) && right.equals(pair.right);
-		}
-
-		@Override
-		public int hashCode() {
-			return 31 * left.hashCode() + right.hashCode();
-		}
-
-		@Override
-		public int compareTo(Pair<L, R> o) {
-			return this.left.compareTo(o.left);
-		}
-	}
 }

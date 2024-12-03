@@ -1,72 +1,68 @@
 package org.aaa;
 
-public class MergeSort {
+public class MergeSort<T extends Comparable<T>> {
 
-
-	private MergeSort() {
-	}
-
-	private static <T extends Comparable<T>> int merge(T[] a, T[] aux, int lo, int mid, int hi) {
-		assert isSorted(a, lo, mid);
-		assert isSorted(a, mid + 1, hi);
+	private static <T extends Comparable<T>> int merge(T[] source, T[] buffer, int low, int mid, int high) {
+		// Precondition, merge operation expects sorted subarrays.
+		assert Utils.isSorted(source, low, mid);
+		assert Utils.isSorted(source, mid + 1, high);
 		int comparisons = 0;
 
-		if (hi + 1 - lo >= 0) {
-			System.arraycopy(a, lo, aux, lo, hi + 1 - lo);
+		if (high + 1 - low >= 0) {
+			System.arraycopy(source, low, buffer, low, high + 1 - low);
 		}
 
-		int i = lo;
+		int i = low;
 		int j = mid + 1;
-		for (int k = lo; k <= hi; k++) {
+		for (int k = low; k <= high; k++) {
 			if (i > mid) {
-				a[k] = aux[j++];
-			} else if (j > hi) {
-				a[k] = aux[i++];
-			} else if (less(aux[j], aux[i])) {
-				a[k] = aux[j++];
+				source[k] = buffer[j++];
+			} else if (j > high) {
+				source[k] = buffer[i++];
+			} else if (Utils.less(buffer[j], buffer[i])) {
+				source[k] = buffer[j++];
 				comparisons++;
 			} else {
-				a[k] = aux[i++];
+				source[k] = buffer[i++];
 			}
 		}
 
-		assert isSorted(a, lo, hi);
+		// Postcondition
+		assert Utils.isSorted(source, low, high);
 		return comparisons;
 	}
 
-	private static <T extends Comparable<T>> int sort(T[] a, T[] aux, int lo, int hi) {
-		if (hi <= lo) {
+	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high) {
+		// Base case, array of one element is always sorted.
+		if (high <= low) {
 			return 0;
 		}
-		int mid = lo + (hi - lo) / 2;
-		sort(a, aux, lo, mid);
-		sort(a, aux, mid + 1, hi);
-		return merge(a, aux, lo, mid, hi);
+
+		// Recursively split in halves.
+		int mid = low + (high - low) / 2;
+		sort(source, buffer, low, mid);
+		sort(source, buffer, mid + 1, high);
+
+		return merge(source, buffer, low, mid, high);
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] a) {
-		if (a == null || a.length == 0) {
+	public static <T extends Comparable<T>> int sort(T[] source) {
+		// Precondition
+		if (source == null) {
 			throw new IllegalArgumentException("Array is null or empty");
 		}
 
-		T[] aux = (T[]) new Comparable[a.length];
-		int comparisons = sort(a, aux, 0, a.length - 1);
-		assert isSorted(a);
+		// An array of length one is sorted.
+		if (source.length == 1) {
+			return 0;
+		}
+
+		T[] destination = (T[]) new Comparable[source.length];
+		int comparisons = sort(source, destination, 0, source.length - 1);
+
+		// Postcondition
+		assert Utils.isSorted(source);
 		return comparisons;
 	}
 
-	// Helpers
-	private static <T extends Comparable<T>> boolean less(T v, T w) {
-		return v.compareTo(w) < 0;
-	}
-
-	private static <T extends Comparable<T>> boolean isSorted(T[] a) {
-		return isSorted(a, 0, a.length - 1);
-	}
-
-	private static <T extends Comparable<T>> boolean isSorted(T[] a, int lo, int hi) {
-		for (int i = lo + 1; i <= hi; i++)
-			if (less(a[i], a[i - 1])) return false;
-		return true;
-	}
 }

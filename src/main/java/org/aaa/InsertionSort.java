@@ -1,34 +1,59 @@
 package org.aaa;
 
-import java.util.Arrays;
-
-public class InsertionSort {
+public class InsertionSort<T extends Comparable<T>> {
 
 	private InsertionSort() {
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] array) {
-		if (array == null || array.length == 0) {
-			throw new IllegalArgumentException("Array is null or empty");
+	public static <T extends Comparable<T>> int sort(T[] source, int low, int high, int offset) {
+		// Preconditions
+		assert high >= low;
+		assert high - low + 1 >= offset;
+		assert offset > 0;
+		assert Utils.isSorted(source, low, offset - 1);
+
+		if (source == null) {
+			throw new IllegalArgumentException("Array cannot be null");
+		}
+
+		if (source.length <= 1) {
+			return 0;
 		}
 
 		int comparisons = 0;
 
-		for (int i = 1; i < array.length; i++) {
-			T current = array[i];
+		for (int i = low + offset; i <= high; i++) {
 			int j = i - 1;
-			while (j >= 0 && array[j].compareTo(current) > 0) {
+			T v = source[i];
+			while (Utils.less(v, source[j])) {
 				comparisons++;
-				array[j + 1] = array[j];
-				j = j - 1;
+				source[j + 1] = source[j];
+				j--;
+				if (j < low) {
+					break;
+				}
 			}
-			array[j + 1] = current;
+			source[j + 1] = v;
 		}
 
 		return comparisons;
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] array, int lo, int hi) {
-		return sort(Arrays.copyOfRange(array, lo, hi));
+	public static <T extends Comparable<T>> int sort(T[] source, int left, int right) {
+		assert left <= right;
+		int comparisons = 0;
+		for (int i = left; i <= right; i++) {
+			for (int j = i; j > left && Utils.less(source[j], source[j - 1]); j--) {
+				Utils.swap(source, j, j - 1);
+				comparisons++;
+			}
+		}
+		return comparisons;
+	}
+
+	public static <T extends Comparable<T>> int sort(T[] a) {
+		int left = 0;
+		int right = a.length - 1;
+		return sort(a, left, right);
 	}
 }
