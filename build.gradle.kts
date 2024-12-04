@@ -1,6 +1,5 @@
 plugins {
     id("java")
-    id("me.champeau.jmh") version "0.7.2"
 }
 
 group = "org.aaa"
@@ -23,12 +22,4 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-}
-
-jmh {
-    iterations = 1
-    fork = 0
-    timeUnit = "us"
-    resultFormat = "CSV"
-    warmupIterations = 0
 }

@@ -24,6 +24,7 @@ public class MergeSort<T extends Comparable<T>> {
 				comparisons++;
 			} else {
 				source[k] = buffer[i++];
+				comparisons++;
 			}
 		}
 

@@ -126,7 +126,7 @@ class MergeSortTest {
 
 	@Provide
 	Arbitrary<Integer[]> integerArrayProvider() {
-		return Arbitraries.integers().array(Integer[].class).ofMinSize(1).injectNull(0);
+		return Arbitraries.integers().withDistribution(RandomDistribution.gaussian()).array(Integer[].class).ofMinSize(1).injectNull(0);
 	}
 
 	@Provide

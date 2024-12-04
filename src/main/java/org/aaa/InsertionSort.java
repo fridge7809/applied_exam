@@ -43,9 +43,11 @@ public class InsertionSort<T extends Comparable<T>> {
 		assert left <= right;
 		int comparisons = 0;
 		for (int i = left; i <= right; i++) {
-			for (int j = i; j > left && Utils.less(source[j], source[j - 1]); j--) {
-				Utils.swap(source, j, j - 1);
+			for (int j = i; j > left; j--) {
 				comparisons++;
+				if (Utils.less(source[j], source[j - 1])) {
+					Utils.swap(source, j, j - 1);
+				}
 			}
 		}
 		return comparisons;
