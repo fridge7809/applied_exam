@@ -46,7 +46,7 @@ public class InsertionSort<T extends Comparable<T>> {
 			for (int j = i; j > left; j--) {
 				comparisons++;
 				if (Utils.less(source[j], source[j - 1])) {
-					Utils.swap(source, j, j - 1);
+					Utils.swapInPlace(source, j, j - 1);
 				}
 			}
 		}

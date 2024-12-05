@@ -2,7 +2,7 @@ package org.aaa;
 
 public class MergeSortAugmented<T extends Comparable<T>> {
 
-	private static final int c = 7;
+	private static final int c = 14;
 
 	private MergeSortAugmented() {
 	}
@@ -42,10 +42,8 @@ public class MergeSortAugmented<T extends Comparable<T>> {
 
 	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high, int insertionThreshold) {
 		// Use insertion sort if below threshold.
-		int comp = 0;
 		if (high <= low + insertionThreshold) {
-			comp = InsertionSort.sort(source, low, high);
-			return comp;
+			return InsertionSort.sort(source, low, high);
 		}
 
 		// Recursively split in halves.
@@ -53,14 +51,7 @@ public class MergeSortAugmented<T extends Comparable<T>> {
 		sort(source, buffer, low, mid, insertionThreshold);
 		sort(source, buffer, mid + 1, high, insertionThreshold);
 
-		// Skip merge
-		// if everything on the left is smaller than everything on the right.
-		/*if (Utils.less(source[mid], source[mid + 1])) {
-			System.arraycopy(source, low, buffer, low, high - low + 1);
-			return 1;
-		}*/
-
-		return comp + merge(source, buffer, low, mid, high);
+		return merge(source, buffer, low, mid, high);
 	}
 
 	public static <T extends Comparable<T>> int sort(T[] a, int insertionSortThreshold) {
@@ -79,7 +70,7 @@ public class MergeSortAugmented<T extends Comparable<T>> {
 	}
 
 	public static void main(String[] args) {
-		int comps = MergeSortAugmented.sort(new Integer[]{100, 101, 102, 103, 104}, 0);
+		int comps = MergeSortAugmented.sort(new Integer[]{100, 101, 102, 103, 104}, 5);
 		System.out.println(comps);
 	}
 

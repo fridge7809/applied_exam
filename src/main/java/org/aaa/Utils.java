@@ -18,9 +18,24 @@ public class Utils<T extends Comparable<T>> {
 		return v.compareTo(w) < 0;
 	}
 
-	static <T extends Comparable<T>> void swap(T[] a, int i, int j) {
+	static <T extends Comparable<T>> boolean lessWeak(T v, T w) {
+		return v.compareTo(w) <= 0;
+	}
+
+	// Swap two array elements in place
+	static <T extends Comparable<T>> void swapInPlace(T[] a, int i, int j) {
 		T temp = a[i];
 		a[i] = a[j];
 		a[j] = temp;
+	}
+
+	// Reverse range low…high of the array in place
+	static <T extends Comparable<T>> void reverseRangeInPlace(T[] array, int low, int high) {
+		high--;
+		while (low < high) {
+			T t = array[low];
+			array[low++] = array[high];
+			array[high--] = t;
+		}
 	}
 }

@@ -16,13 +16,14 @@ public class BenchmarkMergesortAugmented {
 
 	public static void main(String[] args) {
 		ExecutionState state = new ExecutionState();
-		double[] inputSizes = {Math.pow(10d, 1d)};
-		int c = 1000;
+		// BEWARE: noise may dominate lower problem sizes if less than 10^5
+		double[] inputSizes = {Math.pow(10d, 5d)};
+		int c = 50;
 		int[] range = IntStream.range(0, c).toArray();
 
 		int iterations = 5;
 
-		String header = "name,comparisons,c";
+		String header = "name,time,c";
 		System.out.println(header);
 		builder.append(header).append("\n");
 
@@ -32,11 +33,7 @@ public class BenchmarkMergesortAugmented {
 			state.setup();
 			for (int threshold : range) {
 				benchmark("IntsUniform", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.intsUniform, threshold)), threshold);
-				benchmark("IntsAscending", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.intsAscending, threshold)), threshold);
-				benchmark("IntsDescending", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.intsDescending, threshold)), threshold);
-				benchmark("StringsFixedLength", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.stringsFixedLength, threshold)), threshold);
 				benchmark("StringsVariedLength", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.stringsVariedLength, threshold)), threshold);
-				benchmark("StringsFixedPrefix", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.stringsFixedPrefix, threshold)), threshold);
 			}
 		}
 
@@ -45,14 +42,20 @@ public class BenchmarkMergesortAugmented {
 		System.out.println("done, results written to file results.csv");
 	}
 
-	public static void benchmark(String name, int iterations, Runnable task, int c) {
-		for (int i = 0; i < iterations; i++) {
+	public static void benchmark(String name, int iterations, Runnable task, int threshold) {
+		long sumTime = 0;
+		for (int i = 0; i < iterations + WARMUPS; i++) {
+			long startTime = System.nanoTime();
 			task.run();
+			long endTime = System.nanoTime();
+			if (i > WARMUPS) {
+				sumTime += endTime - startTime;
+			}
 		}
-		String result = name + "," + ExecutionState.getComparisons() / iterations + "," + c;
+		sumTime /= iterations;
+		String result = name + "," + sumTime / 1_000_000d + "," + threshold;
 		System.out.println(result);
 		builder.append(result).append(System.lineSeparator());
-		ExecutionState.resetComp();
 	}
 
 	private static void saveResults() {
