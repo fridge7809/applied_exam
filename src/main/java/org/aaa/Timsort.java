@@ -7,7 +7,7 @@ import static org.aaa.Utils.less;
 
 public class Timsort<T extends Comparable<T>> {
 
-	private static final int MINIMUM_RUN_LENGTH = 32;
+	private static int minimumRunLength;
 	private final T[] source;
 	private final T[] buffer;
 	private final int[] runStart;
@@ -15,8 +15,9 @@ public class Timsort<T extends Comparable<T>> {
 	private int stackSize = 0;
 
 	@SuppressWarnings("unchecked")
-	private Timsort(Class<?> clazz, T[] source) {
+	private Timsort(Class<?> clazz, T[] source, int minimumRunLength) {
 		int length = source.length;
+		Timsort.minimumRunLength = minimumRunLength;
 		this.source = source;
 		this.buffer = (T[]) Array.newInstance(clazz, length);
 		int stackLength = 200;
@@ -25,6 +26,10 @@ public class Timsort<T extends Comparable<T>> {
 	}
 
 	public static <T extends Comparable<T>> void sort(T[] source, int left, int right) {
+		sort(source, left, right, 32);
+	}
+
+	public static <T extends Comparable<T>> void sort(T[] source, int left, int right, int minimumRunLength) {
 		// Preconditions
 		if (source == null) {
 			throw new IllegalArgumentException("source is null");
@@ -38,15 +43,15 @@ public class Timsort<T extends Comparable<T>> {
 			return;
 		}
 
-		Timsort<T> ts = new Timsort<>(source.getClass().componentType(), source);
+		Timsort<T> ts = new Timsort<>(source.getClass().componentType(), source, minimumRunLength);
 
 		while (elementsLeft > 0) {
 			int runLength = extendRun(source, left, right);
 			ts.pushRun(left, runLength);
 			ts.mergeCollapse();
-			for (int i = 0; i < ts.stackSize; ++i)
-				System.out.print(ts.runLength[i] + "  ");
-			System.out.println();
+			//for (int i = 0; i < ts.stackSize; ++i)
+			//System.out.print(ts.runLength[i] + "  ");
+			// System.out.println();
 			left += runLength;
 			elementsLeft -= runLength;
 		}
@@ -75,11 +80,14 @@ public class Timsort<T extends Comparable<T>> {
 //			}
 //		}
 //
-//		boolean shouldExtendRun = (runHigh - low) < MINIMUM_RUN_LENGTH && MINIMUM_RUN_LENGTH + low < high;
-//		if (shouldExtendRun) {
-//			InsertionSort.sort(source, low, low + MINIMUM_RUN_LENGTH);
-//			return MINIMUM_RUN_LENGTH;
-//		}
+		int minimumRunLength = Timsort.minimumRunLength;
+		boolean shouldExtendRun = (runHigh - low) < minimumRunLength && minimumRunLength + low < high;
+
+		if (shouldExtendRun) {
+			InsertionSort.sort(source, low, low + minimumRunLength);
+			// System.out.println("extending run");
+			return minimumRunLength;
+		}
 
 		return 1; //runHigh - low;
 	}

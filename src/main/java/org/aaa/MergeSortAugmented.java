@@ -54,7 +54,7 @@ public class MergeSortAugmented<T extends Comparable<T>> {
 		return merge(source, buffer, low, mid, high);
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] a, int insertionSortThreshold) {
+	private static <T extends Comparable<T>> int sortInternal(T[] a, int insertionSortThreshold) {
 		if (a == null || a.length == 0) {
 			throw new IllegalArgumentException("Array is null or empty");
 		}
@@ -65,13 +65,12 @@ public class MergeSortAugmented<T extends Comparable<T>> {
 		return comparisons;
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] a) {
-		return sort(a, c);
+	public static <t extends Comparable<t>> int sort(t[] a, int insertionThreshold) {
+		return sortInternal(a, insertionThreshold);
 	}
 
-	public static void main(String[] args) {
-		int comps = MergeSortAugmented.sort(new Integer[]{100, 101, 102, 103, 104}, 5);
-		System.out.println(comps);
+	public static <t extends Comparable<t>> int sort(t[] a) {
+		return sortInternal(a, c);
 	}
 
 }

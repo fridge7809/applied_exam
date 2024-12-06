@@ -53,8 +53,7 @@ public class MergeSort<T extends Comparable<T>> {
 			throw new IllegalArgumentException("Array is null or empty");
 		}
 
-		// An source of length one is sorted.
-		if (source.length == 1) {
+		if (source.length <= 1) {
 			return 0;
 		}
 

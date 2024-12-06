@@ -4,42 +4,56 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 public class BenchmarkMergesortAugmented {
 
 	static StringBuilder builder = new StringBuilder();
-	static int WARMUPS = 5;
+	static int WARMUPS = 10;
 
 	public static void main(String[] args) {
+		if (args.length != 3) {
+			throw new IllegalArgumentException("Usage: java BenchmarkMergesortAugmented <algorithm> <iterations> <parameterUpperBound> \n example java BenchmarkMergesortAugmented timsort 200 40");
+		}
+		String algorithm = args[0];
+		if (!algorithm.equals("mergesort") && !algorithm.equals("timsort")) {
+			throw new IllegalArgumentException("Invalid algorithm: " + algorithm + "\n valid algorithms: <mergesort,timsort>");
+		}
+
 		ExecutionState state = new ExecutionState();
-		// BEWARE: noise may dominate lower problem sizes if less than 10^5
-		double[] inputSizes = {Math.pow(10d, 5d)};
-		int c = 50;
-		int[] range = IntStream.range(0, c).toArray();
+		double[] inputSizes = {Math.pow(10d, 4d)};
+		int c = Integer.parseInt(args[2]);
+		int[] range = IntStream.range(0, c + 1).toArray();
 
-		int iterations = 5;
+		int iterations = Integer.parseInt(args[1]);
 
+		System.out.println("task 4 start:   for: " + algorithm + ", inputsizes: " + Arrays.toString(inputSizes) + " iterations: " + iterations + " " + "range of parameter: 0-" + (c));
 		String header = "name,time,c";
-		System.out.println(header);
+		//System.out.println(header);
 		builder.append(header).append("\n");
 
 		for (double n : inputSizes) {
 			int ni = (int) n;
-			state.n = ni;
-			state.setup();
+			ExecutionState.n = ni;
+			ExecutionState.generateNewData(ni);
+
 			for (int threshold : range) {
-				benchmark("IntsUniform", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.intsUniform, threshold)), threshold);
-				benchmark("StringsVariedLength", iterations, () -> state.incrementComp(MergeSortAugmented.sort(state.stringsVariedLength, threshold)), threshold);
+				// this could be a lot prettier with an interface,
+				// but the algorithms have different apis,
+				// and we would rather focus our time on the algorithms
+				// rather than best practice java inheritance
+				if (algorithm.equals("timsort")) {
+					benchmark("IntsUniform", iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold), threshold);
+					benchmark("StringsVariedLength", iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold), threshold);
+				} else {
+					benchmark("IntsUniform", iterations, () -> MergeSortAugmented.sort(ExecutionState.intsUniform, threshold), threshold);
+					benchmark("StringsVariedLength", iterations, () -> MergeSortAugmented.sort(ExecutionState.stringsVariedLength, threshold), threshold);
+				}
+				System.out.println("task 4 progress:    completed benchmark for algorithm: " + algorithm + ", iterations: " + iterations + " " + "threshold: " + threshold);
 			}
 		}
 
-		saveResults();
-
-		System.out.println("done, results written to file results.csv");
+		saveResults(algorithm);
 	}
 
 	public static void benchmark(String name, int iterations, Runnable task, int threshold) {
@@ -58,78 +72,16 @@ public class BenchmarkMergesortAugmented {
 		builder.append(result).append(System.lineSeparator());
 	}
 
-	private static void saveResults() {
+	private static void saveResults(String algorithmName) {
 		File file = new File("./output");
 		if (!file.exists()) {
 			file.mkdir();
 		}
-		try (FileWriter fw = new FileWriter("./output/results2.csv")) {
+		try (FileWriter fw = new FileWriter("./output/task4" + algorithmName + "results.csv")) {
 			fw.write(builder.toString());
 		} catch (IOException e) {
 			throw new RuntimeException("Error writing to file", e);
 		}
 	}
 
-	public static class ExecutionState {
-
-		static int comparisons = 0;
-		int n;
-		// Int arrays
-		Integer[] intsUniform;
-		Integer[] intsAscending;
-		Integer[] intsDescending;
-		Double[] intsGaussian;
-		Double[] intsExponential;
-		// String arrays
-		String[] stringsFixedLength;
-		String[] stringsVariedLength;
-		String[] stringsFixedPrefix;
-		Random random = new Random(1000);
-
-		public static void resetComp() {
-			comparisons = 0;
-		}
-
-		public static int getComparisons() {
-			return comparisons;
-		}
-
-		public void incrementComp(int amount) {
-			comparisons += amount;
-		}
-
-		public void setup() {
-			intsUniform = new Integer[n];
-			intsAscending = new Integer[n];
-			intsGaussian = new Double[n];
-			intsExponential = new Double[n];
-
-			byte[] bytesFixed = new byte[100];
-			stringsFixedLength = new String[n];
-			stringsVariedLength = new String[n];
-			stringsFixedPrefix = new String[n];
-
-			for (int i = 0; i < n; i++) {
-				// Numeral data
-				intsAscending[i] = i;
-				intsUniform[i] = random.nextInt();
-				intsGaussian[i] = random.nextGaussian();
-				intsExponential[i] = random.nextDouble() * 10;
-
-				// String data
-				int length = random.nextInt(300);
-				byte[] bytesVaried = new byte[length];
-				random.nextBytes(bytesFixed);
-				random.nextBytes(bytesVaried);
-				stringsFixedLength[i] = new String(bytesFixed);
-				stringsFixedPrefix[i] = "aaaa" + new String(bytesVaried);
-				stringsVariedLength[i] = new String(bytesVaried);
-			}
-
-			// Reverse ascending to create descending
-			List<Integer> ints = Arrays.asList(intsAscending);
-			Collections.reverse(ints);
-			intsDescending = ints.toArray(new Integer[0]);
-		}
-	}
 }
