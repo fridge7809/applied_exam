@@ -8,13 +8,12 @@ import java.util.Arrays;
 public class BenchmarkMergesort {
 
 	static StringBuilder builder = new StringBuilder();
-	static int WARMUPS = 5;
 
 	public static void main(String[] args) {
 		ExecutionState state = new ExecutionState();
-		if (args.length != 3) {
-			throw new IllegalArgumentException("Usage: java BenchmarkMergesort <10,100,1000...N> <iterations> <warmups>" +
-					"\n example: java BenchmarkMergesort 100,200,300 10 5");
+		if (args.length != 2) {
+			throw new IllegalArgumentException("Usage: java BenchmarkMergesort <10,100,1000...N> <iterations> " +
+					"\n example: java BenchmarkMergesort 100,200,300 10");
 		}
 		String[] tokens = args[0].split(",");
 		int[] inputSizes = new int[tokens.length];
@@ -22,12 +21,12 @@ public class BenchmarkMergesort {
 			inputSizes[i] = Integer.parseInt(tokens[i]);
 		}
 		int iterations = Integer.parseInt(args[1]);
-		WARMUPS = Integer.parseInt(args[2]);
 
-		System.out.println("task 2 start:   problem sizes: " + Arrays.toString(inputSizes) + " iterations: " + iterations + " warmups: " + WARMUPS);
+		System.out.println("task 2 start:   problem sizes: " + Arrays.toString(inputSizes) + " iterations: " + iterations);
 		String header = "name,comparisons,time,unit";
 		builder.append(header).append("\n");
 		for (int n : inputSizes) {
+			ExecutionState.setup(n);
 			System.out.println("task 2 progress:    starting N: " + n);
 			benchmark("IntsUniform", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.intsUniform)));
 			benchmark("IntsAscending", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.intsAscending)));
@@ -45,16 +44,14 @@ public class BenchmarkMergesort {
 
 	public static void benchmark(String name, int n, int iterations, Runnable task) {
 		long sumTime = 0;
-		for (int i = 0; i < iterations + WARMUPS; i++) {
+		for (int i = 0; i < iterations; i++) {
 			ExecutionState.generateNewData(n);
 			long startTime = System.nanoTime();
 			task.run();
 			long endTime = System.nanoTime();
-			if (i > WARMUPS) {
-				sumTime += endTime - startTime;
-			}
+			sumTime += (endTime - startTime);
 		}
-		sumTime /= iterations;
+		sumTime /= (double) iterations;
 		String result = name + "," + ExecutionState.getComparisons() / iterations + "," + sumTime / 1_000_000d + "," + "ms";
 		// System.out.println(result);
 		builder.append(result).append(System.lineSeparator());

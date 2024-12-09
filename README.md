@@ -27,7 +27,7 @@ chmod +x ./run.sh && ./run.sh
 ### Run task 2 experiment
 
 ```shell
-java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesort "1000,10000,100000" "500" "10"
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesort "1000,10000,100000" "500"
 ```
 
 ### Plot task 2 experiment
@@ -40,8 +40,8 @@ python3 task2.py "output/task2results.csv" "Strings" "output/task2_strings_plot.
 ### Run task 4 experiment
 
 ```shell
-java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented mergesort "50" "40"
-java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented timsort "50" "40"
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented mergesort "5" "40"
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented timsort "5" "50"
 ```
 
 ### Plot task 4 experiment

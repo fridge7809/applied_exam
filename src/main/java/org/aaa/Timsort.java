@@ -12,24 +12,28 @@ public class Timsort<T extends Comparable<T>> {
 	private final T[] buffer;
 	private final int[] runStart;
 	private final int[] runLength;
+	private final MergeRule mergeRule;
 	private int stackSize = 0;
+	private int topLevel;
 
 	@SuppressWarnings("unchecked")
-	private Timsort(Class<?> clazz, T[] source, int minimumRunLength) {
+	private Timsort(Class<?> clazz, T[] source, int minimumRunLength, MergeRule mergeRule) {
 		int length = source.length;
 		Timsort.minimumRunLength = minimumRunLength;
 		this.source = source;
 		this.buffer = (T[]) Array.newInstance(clazz, length);
+		this.mergeRule = mergeRule;
 		int stackLength = 200;
 		runStart = new int[stackLength];
 		runLength = new int[stackLength];
+		this.topLevel = Integer.MIN_VALUE;
 	}
 
-	public static <T extends Comparable<T>> void sort(T[] source, int left, int right) {
-		sort(source, left, right, 32);
+	public static <T extends Comparable<T>> void sort(T[] source, int left, int right, MergeRule mergeRule) {
+		sort(source, left, right, 32, mergeRule);
 	}
 
-	public static <T extends Comparable<T>> void sort(T[] source, int left, int right, int minimumRunLength) {
+	public static <T extends Comparable<T>> void sort(T[] source, int left, int right, int minimumRunLength, MergeRule mergeRule) {
 		// Preconditions
 		if (source == null) {
 			throw new IllegalArgumentException("source is null");
@@ -43,15 +47,15 @@ public class Timsort<T extends Comparable<T>> {
 			return;
 		}
 
-		Timsort<T> ts = new Timsort<>(source.getClass().componentType(), source, minimumRunLength);
+		Timsort<T> ts = new Timsort<>(source.getClass().componentType(), source, minimumRunLength, mergeRule);
 
 		while (elementsLeft > 0) {
 			int runLength = extendRun(source, left, right);
 			ts.pushRun(left, runLength);
-			ts.mergeCollapse();
-			//for (int i = 0; i < ts.stackSize; ++i)
-			//System.out.print(ts.runLength[i] + "  ");
-			// System.out.println();
+			ts.mergeWithRule();
+			for (int i = 0; i < ts.stackSize; ++i)
+				System.out.print(ts.runLength[i] + "  ");
+			System.out.println();
 			left += runLength;
 			elementsLeft -= runLength;
 		}
@@ -61,38 +65,39 @@ public class Timsort<T extends Comparable<T>> {
 		assert ts.stackSize == 1;
 	}
 
-	private static <T extends Comparable<T>> int extendRun(T[] source, int low, int high) {
+	static <T extends Comparable<T>> int extendRun(T[] source, int low, int high) {
 		assert low < high;
 		int runHigh = low + 1;
 		if (runHigh == high) {
 			return 1;
 		}
 
-//		boolean runIsStrictlyDescending = less(source[runHigh++], source[low]);
-//		if (runIsStrictlyDescending) {
-//			while (runHigh < high && less(source[runHigh], source[runHigh - 1])) {
-//				runHigh++;
-//			}
-//			reverseRange(source, low, runHigh);
-//		} else {
-//			while (runHigh < high && !less(source[runHigh], source[runHigh - 1])) {
-//				runHigh++;
-//			}
-//		}
-//
-		int minimumRunLength = Timsort.minimumRunLength;
-		boolean shouldExtendRun = (runHigh - low) < minimumRunLength && minimumRunLength + low < high;
-
-		if (shouldExtendRun) {
-			InsertionSort.sort(source, low, low + minimumRunLength);
-			// System.out.println("extending run");
-			return minimumRunLength;
+		if (less(source[runHigh++], source[low])) {
+			// descending
+			while (runHigh < high && less(source[runHigh], source[runHigh - 1])) {
+				runHigh++;
+			}
+			reverseRangeInPlace(source, low, runHigh);
+		} else {
+			// ascending
+			while (runHigh < high && !less(source[runHigh], source[runHigh - 1])) {
+				runHigh++;
+			}
 		}
 
-		return 1; //runHigh - low;
+		int runLength = runHigh - low;
+
+		if (runLength < minimumRunLength) {
+			// cap extension to bounds of the source array
+			int extendTo = Math.min(high, low + minimumRunLength);
+			InsertionSort.sort(source, low, extendTo, runLength);
+			return Math.min(high - low - 1, minimumRunLength);
+		}
+
+		return runLength;
 	}
 
-	private static <T extends Comparable<T>> void reverseRange(T[] source, int lo, int hi) {
+	private static <T extends Comparable<T>> void reverseRangeInPlace(T[] source, int lo, int hi) {
 		hi--;
 		while (lo < hi) {
 			T temp = source[lo];
@@ -123,7 +128,7 @@ public class Timsort<T extends Comparable<T>> {
 
 	public static void main(String[] args) {
 		Double[] input = {1.2, 1.1, 1.19, 1.20, 1.10, 0.2};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LENGTHTWO);
 		for (Double d : input) {
 			System.out.println(d);
 		}
@@ -135,24 +140,44 @@ public class Timsort<T extends Comparable<T>> {
 		stackSize++;
 	}
 
-	private void mergeCollapse() {
-		while (stackSize > 1) {
-			int n = stackSize - 1;
-			if (runLength[n] == runLength[n - 1]) {
-				mergeAt(n - 1);
-			} else {
-				break;
+	private void mergeWithRule() {
+		if (this.mergeRule.equals(MergeRule.LENGTHTWO)) {
+			while (stackSize > 1) {
+				int n = stackSize - 1;
+				if (runLength[n] == runLength[n - 1]) {
+					mergeAt(n - 1);
+				} else {
+					break;
+				}
+			}
+		}
+		if (this.mergeRule.equals(MergeRule.LEVELSORT)) {
+			while (stackSize > 1) {
+				int n = stackSize - 1;
+				if (topLevel < computeLevel(n - 1)) {
+					mergeAtLevel(n - 1);
+					topLevel = computeLevel(n - 1);
+				} else {
+					break;
+				}
 			}
 		}
 	}
 
 	private void forceMerge() {
-		while (stackSize > 1) {
-			int n = stackSize - 2;
-			if (n > 0 && n + 1 < stackSize && runLength[n - 1] < runLength[n + 1]) {
-				n--;
+		if (this.mergeRule.equals(MergeRule.LEVELSORT)) {
+			while (stackSize > 1) {
+				int n = stackSize - 1;
+				mergeAtLevel(n - 1);
 			}
-			mergeAt(n);
+		} else {
+			while (stackSize > 1) {
+				int n = stackSize - 2;
+				if (n > 0 && n + 1 < stackSize && runLength[n - 1] < runLength[n + 1]) {
+					n--;
+				}
+				mergeAt(n);
+			}
 		}
 	}
 
@@ -172,5 +197,23 @@ public class Timsort<T extends Comparable<T>> {
 		stackSize--;
 
 		mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1, this.buffer);
+	}
+
+	private void mergeAtLevel(int i) {
+		int firstRunStart = runStart[i];
+		int firstRunLength = runLength[i];
+		int secondRunStart = runStart[i + 1];
+		int secondRunLength = runLength[i + 1];
+
+		runLength[i] = firstRunLength + secondRunLength;
+		stackSize--;
+
+		mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1, this.buffer);
+	}
+
+	private int computeLevel(int i) {
+		long midLeft = (runStart[i] + (long) runLength[i + 1] - 1) / 2;
+		long midRight = (runStart[i + 1] + (long) runLength[i + 2] - 1) / 2;
+		return 64 - Long.numberOfLeadingZeros(midLeft ^ midRight);
 	}
 }

@@ -12,6 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InsertionSortTest {
 
+	@Example
+	void testNewCase() {
+		Integer[] original = new Integer[]{1, 3, 2};
+		InsertionSort.sort(original, 0, original.length - 1, 2);
+		assertThat(original).containsExactly(1, 2, 3);
+	}
+
 	@Property
 	void insertionSort_shouldBeSortedForAnAlreadySortedSubarray(@ForAll("partiallySortedIntArrayProvider") @NotEmpty @WithNull(value = 0) Integer[] arr) {
 		int offset = arr.length / 2;

@@ -27,15 +27,14 @@ public class BenchmarkMergesortAugmented {
 
 		int iterations = Integer.parseInt(args[1]);
 
-		System.out.println("task 4 start:   for: " + algorithm + ", inputsizes: " + Arrays.toString(inputSizes) + " iterations: " + iterations + " " + "range of parameter: 0-" + (c));
+		System.out.println("task 4 start:   for: " + algorithm + ", inputsizes: " + Arrays.toString(inputSizes) + " iterations: " + iterations + " " + "parameter upper bound: " + (c));
 		String header = "name,time,c";
 		//System.out.println(header);
 		builder.append(header).append("\n");
 
 		for (double n : inputSizes) {
 			int ni = (int) n;
-			ExecutionState.n = ni;
-			ExecutionState.generateNewData(ni);
+			ExecutionState.setup(ni);
 
 			for (int threshold : range) {
 				// this could be a lot prettier with an interface,
@@ -43,11 +42,11 @@ public class BenchmarkMergesortAugmented {
 				// and we would rather focus our time on the algorithms
 				// rather than best practice java inheritance
 				if (algorithm.equals("timsort")) {
-					benchmark("IntsUniform", iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold), threshold);
-					benchmark("StringsVariedLength", iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold), threshold);
+					benchmark("IntsUniform", ni, iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold, MergeRule.LENGTHTWO), threshold);
+					benchmark("StringsVariedLength", ni, iterations, () -> Timsort.sort(ExecutionState.stringsVariedLength, 0, ExecutionState.stringsVariedLength.length, threshold, MergeRule.LENGTHTWO), threshold);
 				} else {
-					benchmark("IntsUniform", iterations, () -> MergeSortAugmented.sort(ExecutionState.intsUniform, threshold), threshold);
-					benchmark("StringsVariedLength", iterations, () -> MergeSortAugmented.sort(ExecutionState.stringsVariedLength, threshold), threshold);
+					benchmark("IntsUniform", ni, iterations, () -> MergeSortAugmented.sort(ExecutionState.intsUniform, threshold), threshold);
+					benchmark("StringsVariedLength", ni, iterations, () -> MergeSortAugmented.sort(ExecutionState.stringsVariedLength, threshold), threshold);
 				}
 				System.out.println("task 4 progress:    completed benchmark for algorithm: " + algorithm + ", iterations: " + iterations + " " + "threshold: " + threshold);
 			}
@@ -56,9 +55,10 @@ public class BenchmarkMergesortAugmented {
 		saveResults(algorithm);
 	}
 
-	public static void benchmark(String name, int iterations, Runnable task, int threshold) {
+	public static void benchmark(String name, int n, int iterations, Runnable task, int threshold) {
 		long sumTime = 0;
 		for (int i = 0; i < iterations + WARMUPS; i++) {
+			ExecutionState.generateNewData(n);
 			long startTime = System.nanoTime();
 			task.run();
 			long endTime = System.nanoTime();
@@ -68,7 +68,7 @@ public class BenchmarkMergesortAugmented {
 		}
 		sumTime /= iterations;
 		String result = name + "," + sumTime / 1_000_000d + "," + threshold;
-		System.out.println(result);
+		//System.out.println(result);
 		builder.append(result).append(System.lineSeparator());
 	}
 

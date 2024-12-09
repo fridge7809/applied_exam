@@ -8,7 +8,6 @@ import java.util.Random;
 public class ExecutionState {
 
 	static int comparisons = 0;
-	static int n;
 	static Integer[] intsUniform;
 	static Integer[] intsAscending;
 	static Integer[] intsDescending;
@@ -28,16 +27,6 @@ public class ExecutionState {
 	}
 
 	public static void generateNewData(int n) {
-		resetComp();
-		intsUniform = new Integer[n];
-		intsAscending = new Integer[n];
-		intsGaussian = new Double[n];
-		intsExponential = new Double[n];
-
-		stringsFixedLength = new String[n];
-		stringsVariedLength = new String[n];
-		stringsFixedPrefix = new String[n];
-
 		byte[] bytesFixed = new byte[100];
 		for (int i = 0; i < n; i++) {
 			intsAscending[i] = i;
@@ -57,6 +46,17 @@ public class ExecutionState {
 		List<Integer> ints = Arrays.asList(intsAscending);
 		Collections.reverse(ints);
 		intsDescending = ints.toArray(new Integer[0]);
+	}
+
+	public static void setup(int n) {
+		intsUniform = new Integer[n];
+		intsAscending = new Integer[n];
+		intsGaussian = new Double[n];
+		intsExponential = new Double[n];
+
+		stringsFixedLength = new String[n];
+		stringsVariedLength = new String[n];
+		stringsFixedPrefix = new String[n];
 	}
 
 	public void incrementComp(int amount) {

@@ -12,30 +12,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TimSortTest {
 
 	@Example
-	void runLengthShouldBePowersOfTwo() {
-		Integer[] input = {0, 0, -1, 0, 0, 1, 0, 0, 0};
-		Timsort.sort(input, 0, input.length);
-		assertThat(input).containsExactly(-1, 0, 0, 0, 0, 0, 0, 0, 1);
+	void newCase() {
+		Integer[] input = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
+		assertThat(input).containsExactly(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 	}
 
 	@Example
 	void shouldSortEvenLengthArrays() {
 		Integer[] input = {1, 3, 2, 4};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(1, 2, 3, 4);
 	}
 
 	@Example
 	void shouldSortOddLengthArrays() {
 		Integer[] input = {1, 3, 2};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(1, 2, 3);
 	}
 
 	@Example
 	void shouldExclusivelySortGivenRange() {
 		Double[] input = {1.2, 1.1, 1.19, 1.20, 1.10, 0.2};
-		Timsort.sort(input, 3, input.length);
+		Timsort.sort(input, 3, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(1.2, 1.1, 1.19, 0.2, 1.10, 1.20);
 	}
 
@@ -44,49 +44,49 @@ class TimSortTest {
 		// Internal representation in memory of floating point precision numerals may not be exact and prone
 		// to rounding errors.
 		Double[] input = {1.1, 1.2, 1.19, 1.09, 1.10};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(1.09, 1.1, 1.1, 1.19, 1.2);
 	}
 
 	@Example
 	void shouldHandleMixedPositiveAndNegativeIntegers() {
 		Integer[] input = {3, -1, 2, -5, 0};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(-5, -1, 0, 2, 3);
 	}
 
 	@Example
 	void shouldSortBooleans() {
 		Boolean[] input = {false, false, true, false};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).isSorted();
 	}
 
 	@Example
 	void shouldHandleDuplicateElements() {
 		Integer[] input = {5, 1, 3, 3, 2, 5};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(1, 2, 3, 3, 5, 5);
 	}
 
 	@Example
 	void shouldHandleDuplicateUnicodeCharacters() {
 		Character[] input = {'a', 'A', 'a', 'A', 'b', 'B'};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly('A', 'A', 'B', 'a', 'a', 'b');
 	}
 
 	@Example
 	void shouldHandleAllZeroes() {
 		Byte[] input = {0, 0, 0, 0, 0, 0};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly((byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0);
 	}
 
 	@Example
 	void shouldSortArrayWithLargeAndSmallNumbers() {
 		Integer[] input = {Integer.MAX_VALUE, Integer.MIN_VALUE, 0, -1, 1};
-		Timsort.sort(input, 0, input.length);
+		Timsort.sort(input, 0, input.length, MergeRule.LEVELSORT);
 		assertThat(input).containsExactly(Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE);
 	}
 
@@ -98,7 +98,7 @@ class TimSortTest {
 		Pair[] pairs = input.toArray(new Pair[0]);
 		Integer[] rightValues = input.stream().map(Pair::getRight).toArray(Integer[]::new);
 
-		Timsort.sort(pairs, 0, pairs.length);
+		Timsort.sort(pairs, 0, pairs.length, MergeRule.LEVELSORT);
 
 		for (int i = 0; i < pairs.length - 1; i++) {
 			if (pairs[i].equals(pairs[i + 1])) {
@@ -110,13 +110,20 @@ class TimSortTest {
 	@Property
 	<T extends Comparable<T>> void sortedArrayShouldContainAllOriginalElements(@ForAll("dataTypesUnderTestProvider") T[] arr) {
 		List<T> objects = Arrays.stream(arr).toList();
-		Timsort.sort(arr, 0, arr.length);
+		Timsort.sort(arr, 0, arr.length, MergeRule.LEVELSORT);
 		assertThat(arr).containsAll(objects);
 	}
 
 	@Property
 	<T extends Comparable<T>> void shouldSortArray(@ForAll("dataTypesUnderTestProvider") T[] arr) {
-		Timsort.sort(arr, 0, arr.length);
+		Timsort.sort(arr, 0, arr.length, MergeRule.LEVELSORT);
+		assertThat(arr).isSorted();
+	}
+
+	@Example
+	void shouldSortWhenRunIsAtBounds() {
+		Integer[] arr = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
+		Timsort.sort(arr, 0, arr.length, 32, MergeRule.LEVELSORT);
 		assertThat(arr).isSorted();
 	}
 
@@ -126,7 +133,7 @@ class TimSortTest {
 		// while right values remain stable.
 		Pair<Integer, Integer>[] pairs = input.toArray(new Pair[0]); // Specify the type of the Pair
 
-		Timsort.sort(pairs, 0, pairs.length);
+		Timsort.sort(pairs, 0, pairs.length, MergeRule.LEVELSORT);
 
 		for (int i = 0; i < pairs.length - 1; i++) {
 			if (pairs[i].getLeft().equals(pairs[i + 1].getLeft())) {

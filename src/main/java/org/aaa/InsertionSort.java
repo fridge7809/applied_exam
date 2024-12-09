@@ -22,7 +22,7 @@ public class InsertionSort<T extends Comparable<T>> {
 
 		int comparisons = 0;
 
-		for (int i = low + offset; i <= high; i++) {
+		for (int i = low + offset; i < high; i++) {
 			int j = i - 1;
 			T v = source[i];
 			while (Utils.less(v, source[j])) {
