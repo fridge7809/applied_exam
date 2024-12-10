@@ -1,6 +1,7 @@
 package org.aaa;
 
 import net.jqwik.api.*;
+import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.constraints.WithNull;
 
@@ -15,8 +16,8 @@ class TimSortTest {
 
 	@Property
 	<T extends Comparable<T>> void shouldThrowForNonComparableObjects(@ForAll boolean isAdaptive, @ForAll("mergeRuleProvider") MergeRule mergeRule) {
-		Object[] input = {new Object(), new Object(), new Object()};
-		assertThatThrownBy(() -> Timsort.sort((T[]) input, 0, input.length, mergeRule, isAdaptive))
+		Object[] actualMergesort = {new Object(), new Object(), new Object()};
+		assertThatThrownBy(() -> Timsort.sort((T[]) actualMergesort, 0, actualMergesort.length, mergeRule, isAdaptive))
 				.isInstanceOf(ClassCastException.class);
 	}
 
@@ -29,7 +30,9 @@ class TimSortTest {
 
 	@Property
 	@Disabled("inefficient")
-	void shouldSortLargeArray(@ForAll boolean isAdaptive) {
+	void shouldSortLargeArray(@ForAll("mergeRuleProvider") MergeRule mergeRule,
+	                          @ForAll boolean isAdaptive,
+	                          @ForAll @IntRange(min = 0, max = 100) int cutoff) {
 		int largeSize = 26_843_545; // approaching upper bound for -Xmx4G
 		Byte[] input = new Byte[largeSize];
 		Timsort.sort(input, 0, input.length, MergeRule.BINOMIALSORT, isAdaptive);
@@ -37,9 +40,13 @@ class TimSortTest {
 	}
 
 	@Property
-	void shouldHandleSingleElementArray(@ForAll("mergeRuleProvider") MergeRule mergeRule, @ForAll boolean isAdaptive) {
+	<T extends Comparable<T>> void shouldHandleSingleElementArray(
+			@ForAll("mergeRuleProvider") MergeRule mergeRule,
+			@ForAll boolean isAdaptive,
+			@ForAll @IntRange(min = 0, max = 100) int cutoff
+	) {
 		Integer[] input = {42};
-		Timsort.sort(input, 0, input.length, mergeRule, isAdaptive);
+		Timsort.sort(input, mergeRule, isAdaptive, cutoff);
 		assertThat(input).containsExactly(42);
 	}
 
@@ -274,44 +281,9 @@ class TimSortTest {
 				});
 	}
 
-	public static class Pair<L extends Comparable, R extends Comparable> implements Comparable<Pair<L, R>> {
-		private final L left;
-		private final R right;
-
-		public Pair(L left, R right) {
-			this.left = left;
-			this.right = right;
-		}
-
-		public L getLeft() {
-			return left;
-		}
-
-		public R getRight() {
-			return right;
-		}
-
-		@Override
-		public String toString() {
-			return "(" + left + ", " + right + ")";
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Pair<?, ?> pair = (Pair<?, ?>) o;
-			return left.equals(pair.left) && right.equals(pair.right);
-		}
-
-		@Override
-		public int hashCode() {
-			return 31 * left.hashCode() + right.hashCode();
-		}
-
-		@Override
-		public int compareTo(Pair<L, R> o) {
-			return this.left.compareTo(o.left);
-		}
+	@Provide
+	Arbitrary<MergeRule> mergeRuleProvider() {
+		return Arbitraries.of(MergeRule.class);
 	}
+
 }

@@ -41,12 +41,12 @@ class InsertionSortTest {
 	}
 
 	@Property
-	void insertionSort_isStable(@ForAll("pairSequenceProvider") List<MergeSortTest.Pair<Integer, Integer>> input) {
+	void insertionSort_isStable(@ForAll("pairSequenceProvider") List<Pair<Integer, Integer>> input) {
 		// Example case: Sorting pairs using left values for comparison.
 		// Sorting is stable because the right value of the pair remains sorted even though it is not used in the comparison for the sort.
 		// INPUT: (0, 0), (1, 1), (2, 2), (1, 3)
 		// OUTPUT: (0, 0), (1, 1), (1, 3), (2, 2)
-		Integer[] arrayToSort = Arrays.stream(input.toArray(new MergeSortTest.Pair[0])).map(MergeSortTest.Pair::getLeft).toArray(Integer[]::new);
+		Integer[] arrayToSort = Arrays.stream(input.toArray(new Pair[0])).map(Pair::getLeft).toArray(Integer[]::new);
 		InsertionSort.sort(arrayToSort);
 		for (int i = 0; i < arrayToSort.length - 1; i++) {
 			if (arrayToSort[i].equals(arrayToSort[i + 1])) {
@@ -69,7 +69,7 @@ class InsertionSortTest {
 
 		return Combinators.combine(xProvider, sortedArrayProvider)
 				.as((_, sortedArray) -> Arrays.stream(sortedArray)
-						.map(second -> new MergeSortTest.Pair(xProvider.sample(), second))
+						.map(second -> new Pair(xProvider.sample(), second))
 						.toList());
 	}
 
@@ -92,6 +92,4 @@ class InsertionSortTest {
 			return result;
 		});
 	}
-
-
 }

@@ -14,9 +14,9 @@ public class Timsort<T extends Comparable<T>> {
 	private final int[] runLength;
 	private final MergeRule mergeRule;
 	private final boolean isAdaptive;
+	private final int cutoff;
 	private int stackSize = 0;
 	private int topLevel;
-	private final int cutoff;
 
 	@SuppressWarnings("unchecked")
 	private Timsort(Class<?> clazz, T[] source, int cutoff, MergeRule mergeRule, boolean isAdaptive) {
@@ -41,9 +41,6 @@ public class Timsort<T extends Comparable<T>> {
 		if (source == null) {
 			throw new IllegalArgumentException("source is null");
 		}
-//		if (!Comparable.class.isAssignableFrom(source.getClass().getComponentType())) {
-//			throw new IllegalArgumentException("source must be Comparable");
-//		}
 
 		assert low >= 0;
 		assert low <= high;
@@ -109,6 +106,10 @@ public class Timsort<T extends Comparable<T>> {
 				0
 		};
 		Timsort.sort(input, 0, input.length, 2, MergeRule.LENGTHTWO, false);
+	}
+
+	public static <T extends Comparable<T>> void sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
+		sort(array, 0, array.length, cutoff, mergeRule, isAdaptive);
 	}
 
 	private <T extends Comparable<T>> int extendRun(T[] source, int low, int high) {

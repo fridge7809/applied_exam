@@ -2,6 +2,8 @@ package org.aaa;
 
 public class MergeSort<T extends Comparable<T>> {
 
+	private static final int DEFAULT_INSERTION_SORT_THRESHOLD = 14;
+
 	private static <T extends Comparable<T>> int merge(T[] source, T[] buffer, int low, int mid, int high) {
 		// Precondition, merge operation expects sorted subarrays.
 		assert Utils.isSorted(source, low, mid);
@@ -34,12 +36,10 @@ public class MergeSort<T extends Comparable<T>> {
 	}
 
 	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high) {
-		// Base case, array of one element is always sorted.
 		if (high <= low) {
-			return 0;
+			return 0; // Base case, array of one element is always sorted.
 		}
 
-		// Recursively split in halves.
 		int mid = low + (high - low) / 2;
 		sort(source, buffer, low, mid);
 		sort(source, buffer, mid + 1, high);
@@ -47,22 +47,39 @@ public class MergeSort<T extends Comparable<T>> {
 		return merge(source, buffer, low, mid, high);
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] source) {
-		// Precondition
-		if (source == null) {
+	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high, int insertionThreshold) {
+		if (high <= low + insertionThreshold) {
+			return InsertionSort.sort(source, low, high); // Use insertion sort if below threshold.
+		}
+
+		int mid = low + (high - low) / 2;
+		sort(source, buffer, low, mid, insertionThreshold);
+		sort(source, buffer, mid + 1, high, insertionThreshold);
+
+		return merge(source, buffer, low, mid, high);
+	}
+
+	private static <T extends Comparable<T>> int sortInternal(T[] source, int insertionSortThreshold) {
+		if (source == null || source.length == 0) {
 			throw new IllegalArgumentException("Array is null or empty");
 		}
 
-		if (source.length <= 1) {
-			return 0;
-		}
+		T[] buffer = (T[]) new Comparable[source.length];
+		int comparisons = sort(source, buffer, 0, source.length - 1, insertionSortThreshold);
 
-		T[] destination = (T[]) new Comparable[source.length];
-		int comparisons = sort(source, destination, 0, source.length - 1);
-
-		// Postcondition
 		assert Utils.isSorted(source);
 		return comparisons;
 	}
 
+	public static <T extends Comparable<T>> int sort(T[] source) {
+		return sortInternal(source, Integer.MIN_VALUE);
+	}
+
+	public static <T extends Comparable<T>> int sort(T[] source, int insertionThreshold) {
+		return sortInternal(source, insertionThreshold);
+	}
+
+	public <T extends Comparable<T>> void sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
+		sort(array);
+	}
 }

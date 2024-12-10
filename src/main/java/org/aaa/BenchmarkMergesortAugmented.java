@@ -45,8 +45,8 @@ public class BenchmarkMergesortAugmented {
 					benchmark("IntsUniform", ni, iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold, MergeRule.LENGTHTWO, false), threshold);
 					benchmark("StringsVariedLength", ni, iterations, () -> Timsort.sort(ExecutionState.stringsVariedLength, 0, ExecutionState.stringsVariedLength.length, threshold, MergeRule.LENGTHTWO, false), threshold);
 				} else {
-					benchmark("IntsUniform", ni, iterations, () -> MergeSortAugmented.sort(ExecutionState.intsUniform, threshold), threshold);
-					benchmark("StringsVariedLength", ni, iterations, () -> MergeSortAugmented.sort(ExecutionState.stringsVariedLength, threshold), threshold);
+					benchmark("IntsUniform", ni, iterations, () -> MergeSort.sort(ExecutionState.intsUniform, threshold), threshold);
+					benchmark("StringsVariedLength", ni, iterations, () -> MergeSort.sort(ExecutionState.stringsVariedLength, threshold), threshold);
 				}
 				System.out.println("task 4 progress:    completed benchmark for algorithm: " + algorithm + ", iterations: " + iterations + " " + "threshold: " + threshold);
 			}
