@@ -24,8 +24,8 @@ public class InsertionSort<T extends Comparable<T>> {
 
 		for (int i = low + offset; i < high; i++) {
 			int j = i - 1;
-			T v = source[i];
-			while (Utils.less(v, source[j])) {
+			T temp = source[i];
+			while (Utils.less(temp, source[j])) {
 				comparisons++;
 				source[j + 1] = source[j];
 				j--;
@@ -33,7 +33,7 @@ public class InsertionSort<T extends Comparable<T>> {
 					break;
 				}
 			}
-			source[j + 1] = v;
+			source[j + 1] = temp;
 		}
 
 		return comparisons;

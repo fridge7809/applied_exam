@@ -42,8 +42,8 @@ public class BenchmarkMergesortAugmented {
 				// and we would rather focus our time on the algorithms
 				// rather than best practice java inheritance
 				if (algorithm.equals("timsort")) {
-					benchmark("IntsUniform", ni, iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold, MergeRule.LENGTHTWO), threshold);
-					benchmark("StringsVariedLength", ni, iterations, () -> Timsort.sort(ExecutionState.stringsVariedLength, 0, ExecutionState.stringsVariedLength.length, threshold, MergeRule.LENGTHTWO), threshold);
+					benchmark("IntsUniform", ni, iterations, () -> Timsort.sort(ExecutionState.intsUniform, 0, ExecutionState.intsUniform.length, threshold, MergeRule.LENGTHTWO, false), threshold);
+					benchmark("StringsVariedLength", ni, iterations, () -> Timsort.sort(ExecutionState.stringsVariedLength, 0, ExecutionState.stringsVariedLength.length, threshold, MergeRule.LENGTHTWO, false), threshold);
 				} else {
 					benchmark("IntsUniform", ni, iterations, () -> MergeSortAugmented.sort(ExecutionState.intsUniform, threshold), threshold);
 					benchmark("StringsVariedLength", ni, iterations, () -> MergeSortAugmented.sort(ExecutionState.stringsVariedLength, threshold), threshold);
