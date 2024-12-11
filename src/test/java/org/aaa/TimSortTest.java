@@ -14,6 +14,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TimSortTest {
 
+	@Example
+	void failingCase() {
+		Integer[] input = {0, 0, 0, 0, -1, 1, 0, 0, 0};
+		Timsort.sort(input, 0, input.length, MergeRule.BINOMIALSORT, false);
+		assertThat(input).containsExactly(-1, 0, 0, 0, 0, 0, 0, 0, 1);
+	}
+
 	@Property
 	<T extends Comparable<T>> void shouldThrowForNonComparableObjects(@ForAll boolean isAdaptive, @ForAll("mergeRuleProvider") MergeRule mergeRule) {
 		Object[] actualMergesort = {new Object(), new Object(), new Object()};

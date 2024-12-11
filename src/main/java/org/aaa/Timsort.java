@@ -57,7 +57,11 @@ public class Timsort<T extends Comparable<T>> {
 		while (elementsLeft > 0) {
 			int runLength = ts.extendRun(source, low, high);
 			ts.pushRun(low, runLength);
+//			for (int i = 0; i < ts.stackSize; i++) {
+//				System.out.println(ts.runLength[i] + "    ");
+//			}
 			ts.mergeWithRule(mergeRule);
+			// System.out.println();
 			low += runLength;
 			elementsLeft -= runLength;
 		}
@@ -99,13 +103,8 @@ public class Timsort<T extends Comparable<T>> {
 	}
 
 	public static void main(String[] args) {
-		Integer[] input = {
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0
-		};
-		Timsort.sort(input, 0, input.length, 2, MergeRule.LENGTHTWO, false);
+		Integer[] input = {1, 2, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 2, 1, 2, 3, 1, 2};
+		Timsort.sort(input, 0, input.length, 0, MergeRule.BINOMIALSORT, true);
 	}
 
 	public static <T extends Comparable<T>> void sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
@@ -139,16 +138,18 @@ public class Timsort<T extends Comparable<T>> {
 			return this.isAdaptive ? localRunLength : cutoff;
 		}
 
-		if (this.isAdaptive) {
-			// Cap extension to bounds of the source array
-			int cappedUpperBound = Math.min(high, low + cutoff);
-			// run insertionsort with run length as an offset
-			InsertionSort.sort(source, low, cappedUpperBound, localRunLength);
-			int diff = high - low - 1;
-			return Math.min(diff, cutoff);
+		if (!this.isAdaptive && runHigh - low >= cutoff) {
+			return cutoff;
 		}
 
-		return localRunLength;
+		// Run is smaller than minimum cutoff, extend using insertionssort
+		// Cap extension to bounds of the source array
+		int cappedUpperBound = Math.min(high, low + cutoff);
+		// run insertionsort with run length as an offset
+		InsertionSort.sort(source, low, cappedUpperBound, localRunLength);
+		int diff = high - low - 1;
+		return Math.min(diff, cutoff);
+
 	}
 
 	private void pushRun(int runStart, int runLength) {
@@ -171,20 +172,25 @@ public class Timsort<T extends Comparable<T>> {
 
 	private void mergeBinomialSort() {
 		while (stackSize > 1) {
-			int n = stackSize - 2;
-			if (n > 0 && n + 1 < stackSize && runLength[n - 1] < runLength[n + 1]) {
-				n--;
+			int ny = stackSize - 1;
+			while (stackSize > 2 && (runLength[ny - 1] < runLength[ny])) {
+				mergeAt(ny - 2);
 			}
-			mergeAt(n);
+			if (runLength[ny - 1] < 2 * runLength[ny]) {
+				mergeAt(ny - 1);
+			} else {
+				break;
+			}
 		}
 	}
 
 	private void mergeLevelSort() {
 		while (stackSize > 1) {
 			int n = stackSize - 1;
-			if (topLevel < computeLevel(n - 1)) {
+			int localLevel = computeLevel(n - 1);
+			if (topLevel < localLevel) {
 				mergeAt(n - 1);
-				topLevel = computeLevel(n - 1);
+				topLevel = localLevel;
 			} else {
 				break;
 			}
