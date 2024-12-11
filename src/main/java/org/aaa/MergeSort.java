@@ -72,10 +72,10 @@ public class MergeSort<T extends Comparable<T>> {
 	}
 
 	public static <T extends Comparable<T>> int sort(T[] source) {
-		return sortInternal(source, Integer.MIN_VALUE);
+		return sortInternal(source, 0);
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] source, int insertionThreshold) {
+	public static <T extends Comparable<T>> int sort(T[] source, int insertionThreshold, boolean useThreshold) {
 		return sortInternal(source, insertionThreshold);
 	}
 
