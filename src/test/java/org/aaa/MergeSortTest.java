@@ -21,6 +21,20 @@ class MergeSortTest {
 		assertThatThrownBy(() -> MergeSort.sort(input, cutoff, false)).message().isEqualTo("Array is null or empty");
 	}
 
+	@Property
+	<T extends Comparable<T>> void shouldThrowForNonComparableObjects(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
+		Object[] actualMergesort = {new Object(), new Object(), new Object()};
+		assertThatThrownBy(() -> MergeSort.sort((T[]) actualMergesort, cutoff, useThreshold))
+				.isInstanceOf(ClassCastException.class);
+	}
+
+	@Property
+	<T extends Comparable<T>> void shouldThrowForNonComparablePrimitives(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
+		Object[] input = {1, 3.14, 'c'};
+		assertThatThrownBy(() -> MergeSort.sort((T[]) input, cutoff, useThreshold))
+				.isInstanceOf(ClassCastException.class);
+	}
+
 	// Positive cases examples
 
 	@Example
