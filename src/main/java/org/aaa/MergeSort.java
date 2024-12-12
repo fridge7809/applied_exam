@@ -41,10 +41,10 @@ public class MergeSort<T extends Comparable<T>> {
 		}
 
 		int mid = low + (high - low) / 2;
-		sort(source, buffer, low, mid);
-		sort(source, buffer, mid + 1, high);
+		int left = sort(source, buffer, low, mid);
+		int right = sort(source, buffer, mid + 1, high);
 
-		return merge(source, buffer, low, mid, high);
+		return left + right + merge(source, buffer, low, mid, high);
 	}
 
 	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high, int insertionThreshold) {
@@ -53,10 +53,10 @@ public class MergeSort<T extends Comparable<T>> {
 		}
 
 		int mid = low + (high - low) / 2;
-		sort(source, buffer, low, mid, insertionThreshold);
-		sort(source, buffer, mid + 1, high, insertionThreshold);
+		int left = sort(source, buffer, low, mid, insertionThreshold);
+		int right = sort(source, buffer, mid + 1, high, insertionThreshold);
 
-		return merge(source, buffer, low, mid, high);
+		return left + right + merge(source, buffer, low, mid, high);
 	}
 
 	private static <T extends Comparable<T>> int sortInternal(T[] source, int insertionSortThreshold) {
