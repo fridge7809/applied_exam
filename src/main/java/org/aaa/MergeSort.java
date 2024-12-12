@@ -1,13 +1,16 @@
 package org.aaa;
 
+import static org.aaa.Utils.isSorted;
+import static org.aaa.Utils.less;
+
 public class MergeSort<T extends Comparable<T>> {
 
 	private static final int DEFAULT_INSERTION_SORT_THRESHOLD = 14;
 
 	private static <T extends Comparable<T>> int merge(T[] source, T[] buffer, int low, int mid, int high) {
 		// Precondition, merge operation expects sorted subarrays.
-		assert Utils.isSorted(source, low, mid);
-		assert Utils.isSorted(source, mid + 1, high);
+		assert isSorted(source, low, mid);
+		assert isSorted(source, mid + 1, high);
 		int comparisons = 0;
 
 		if (high + 1 - low >= 0) {
@@ -21,7 +24,7 @@ public class MergeSort<T extends Comparable<T>> {
 				source[k] = buffer[j++];
 			} else if (j > high) {
 				source[k] = buffer[i++];
-			} else if (Utils.less(buffer[j], buffer[i])) {
+			} else if (less(buffer[j], buffer[i])) {
 				source[k] = buffer[j++];
 				comparisons++;
 			} else {
@@ -31,7 +34,7 @@ public class MergeSort<T extends Comparable<T>> {
 		}
 
 		// Postcondition
-		assert Utils.isSorted(source, low, high);
+		assert isSorted(source, low, high);
 		return comparisons;
 	}
 
@@ -67,7 +70,7 @@ public class MergeSort<T extends Comparable<T>> {
 		T[] buffer = (T[]) new Comparable[source.length];
 		int comparisons = sort(source, buffer, 0, source.length - 1, insertionSortThreshold);
 
-		assert Utils.isSorted(source);
+		assert isSorted(source);
 		return comparisons;
 	}
 

@@ -4,13 +4,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
+
+import static org.aaa.DataGenerator.*;
 
 public class BenchmarkMergesort {
 
 	static StringBuilder builder = new StringBuilder();
 
-	public static void main(String[] args) {
-		ExecutionState state = new ExecutionState();
+	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
 			throw new IllegalArgumentException("Usage: java BenchmarkMergesort <10,100,1000...N> <iterations> " +
 					"\n example: java BenchmarkMergesort 100,200,300 10");
@@ -23,39 +25,43 @@ public class BenchmarkMergesort {
 		int iterations = Integer.parseInt(args[1]);
 
 		System.out.println("task 2 start:   problem sizes: " + Arrays.toString(inputSizes) + " iterations: " + iterations);
-		String header = "name,comparisons,time,unit";
+		String header = "name,comparisons,time,n,unit";
 		builder.append(header).append("\n");
+
 		for (int n : inputSizes) {
-			ExecutionState.setup(n);
-			System.out.println("task 2 progress:    starting N: " + n);
-			benchmark("IntsUniform", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.intsUniform)));
-			benchmark("IntsAscending", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.intsAscending)));
-			benchmark("IntsDescending", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.intsDescending)));
-			benchmark("StringsFixedLength", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.stringsFixedLength)));
-			benchmark("StringsVariedLength", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.stringsVariedLength)));
-			benchmark("StringsFixedPrefix", n, iterations, () -> state.incrementComp(MergeSort.sort(ExecutionState.stringsFixedPrefix)));
+			System.out.println("task 2 progress:    starting N:     " + n);
+			for (InputType inputType : InputType.values()) {
+				for (Distribution distribution : Distribution.values()) {
+					for (StringContent content : StringContent.values()) {
+						benchmark(inputType.name(), n, iterations, () -> MergeSort.sort(generateDataOfType(inputType, distribution, content, n)));
+					}
+				}
+			}
+
 			System.out.println("task 2 progress:    completed N:    " + n);
 		}
 
 		saveResults();
-
 		System.out.println("task 2 done:    results written to ./output/task2results.csv");
 	}
 
-	public static void benchmark(String name, int n, int iterations, Runnable task) {
-		long sumTime = 0;
+	public static void benchmark(String name, int n, int iterations, Callable<?> task) throws Exception {
+		int[] comparisons = new int[iterations];
+		long[] times = new long[iterations];
 		for (int i = 0; i < iterations; i++) {
-			ExecutionState.generateNewData(n);
 			long startTime = System.nanoTime();
-			task.run();
+			int count = (int) task.call();
 			long endTime = System.nanoTime();
-			sumTime += (endTime - startTime);
+			comparisons[i] = count;
+			times[i] = (endTime - startTime);
 		}
-		sumTime /= (double) iterations;
-		String result = name + "," + ExecutionState.getComparisons() / iterations + "," + sumTime / 1_000_000d + "," + "ms";
-		// System.out.println(result);
+		Arrays.sort(comparisons);
+		Arrays.sort(times);
+		long medianComps = comparisons[(comparisons.length / 2) % 2 == 0 ? comparisons.length / 2 + 1 : comparisons.length / 2];
+		long medianTime = times[(times.length / 2) % 2 == 0 ? times.length / 2 + 1 : times.length / 2];
+
+		String result = name + "," + medianComps + "," + medianTime / 1_000_000d + "," + n + "," + "ms";
 		builder.append(result).append(System.lineSeparator());
-		ExecutionState.resetComp();
 	}
 
 	private static void saveResults() {

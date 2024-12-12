@@ -15,6 +15,7 @@ public class Timsort<T extends Comparable<T>> {
 	private final MergeRule mergeRule;
 	private final boolean isAdaptive;
 	private final int cutoff;
+	private int comparisons;
 	private int stackSize = 0;
 	private int topLevel;
 
@@ -28,15 +29,17 @@ public class Timsort<T extends Comparable<T>> {
 		this.mergeRule = mergeRule;
 		this.isAdaptive = isAdaptive;
 		this.topLevel = Integer.MIN_VALUE;
+		this.comparisons = 0;
 		runStart = new int[stackLength];
 		runLength = new int[stackLength];
+
 	}
 
 	public static <T extends Comparable<T>> void sort(T[] source, int low, int high, MergeRule mergeRule, boolean isAdaptive) {
 		sort(source, low, high, 32, mergeRule, isAdaptive);
 	}
 
-	public static <T extends Comparable<T>> void sort(T[] source, int low, int high, int cutoff, MergeRule mergeRule, boolean isAdaptive) {
+	public static <T extends Comparable<T>> int sort(T[] source, int low, int high, int cutoff, MergeRule mergeRule, boolean isAdaptive) {
 		// Preconditions
 		if (source == null) {
 			throw new IllegalArgumentException("source is null");
@@ -48,7 +51,7 @@ public class Timsort<T extends Comparable<T>> {
 
 		int elementsLeft = high - low;
 		if (elementsLeft < 2) {
-			return;
+			return 0;
 		}
 
 		// state of the sort is contained within a private instance of the class
@@ -57,11 +60,7 @@ public class Timsort<T extends Comparable<T>> {
 		while (elementsLeft > 0) {
 			int runLength = ts.extendRun(source, low, high);
 			ts.pushRun(low, runLength);
-//			for (int i = 0; i < ts.stackSize; i++) {
-//				System.out.println(ts.runLength[i] + "    ");
-//			}
 			ts.mergeWithRule(mergeRule);
-			// System.out.println();
 			low += runLength;
 			elementsLeft -= runLength;
 		}
@@ -69,6 +68,7 @@ public class Timsort<T extends Comparable<T>> {
 		assert low == high;
 		ts.forceMerge();
 		assert ts.stackSize == 1;
+		return ts.comparisons;
 	}
 
 	private static <T extends Comparable<T>> void reverseRangeInPlace(T[] source, int low, int high) {
@@ -82,7 +82,9 @@ public class Timsort<T extends Comparable<T>> {
 		}
 	}
 
-	public static <T extends Comparable<T>> void mergeRuns(T[] source, int low, int mid, int high, T[] buffer) {
+	public static <T extends Comparable<T>> int mergeRuns(T[] source, int low, int mid, int high, T[] buffer) {
+		int comparisons = 0;
+
 		if (high + 1 - low >= 0) {
 			System.arraycopy(source, low, buffer, low, high + 1 - low);
 		}
@@ -95,20 +97,27 @@ public class Timsort<T extends Comparable<T>> {
 			} else if (j > high) {
 				source[k] = buffer[i++];
 			} else if (less(buffer[j], buffer[i])) {
+				comparisons++;
 				source[k] = buffer[j++];
 			} else {
 				source[k] = buffer[i++];
+				comparisons++;
 			}
 		}
+		return comparisons;
 	}
 
 	public static void main(String[] args) {
-		Integer[] input = {1, 2, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 2, 1, 2, 3, 1, 2};
-		Timsort.sort(input, 0, input.length, 0, MergeRule.BINOMIALSORT, true);
+		Integer[] input = {1, 2, 3, 4};
+		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.BINOMIALSORT, true);
+		System.out.println(comps);
 	}
 
-	public static <T extends Comparable<T>> void sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
-		sort(array, 0, array.length, cutoff, mergeRule, isAdaptive);
+	public static <T extends Comparable<T>> int sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
+		if (cutoff < 1) {
+			throw new IllegalArgumentException("cutoff must be greater than 0");
+		}
+		return sort(array, 0, array.length, cutoff, mergeRule, isAdaptive);
 	}
 
 	private <T extends Comparable<T>> int extendRun(T[] source, int low, int high) {
@@ -119,15 +128,18 @@ public class Timsort<T extends Comparable<T>> {
 		}
 
 		boolean runIsDescending = less(source[runHigh++], source[low]);
+		comparisons++;
 		if (runIsDescending) {
 			// strictly decreasing
 			while (runHigh < high && less(source[runHigh], source[runHigh - 1])) {
+				comparisons++;
 				runHigh++;
 			}
 			reverseRangeInPlace(source, low, runHigh);
 		} else {
 			// weakly increasing
 			while (runHigh < high && !less(source[runHigh], source[runHigh - 1])) {
+				comparisons++;
 				runHigh++;
 			}
 		}
@@ -146,7 +158,7 @@ public class Timsort<T extends Comparable<T>> {
 		// Cap extension to bounds of the source array
 		int cappedUpperBound = Math.min(high, low + cutoff);
 		// run insertionsort with run length as an offset
-		InsertionSort.sort(source, low, cappedUpperBound, localRunLength);
+		comparisons += InsertionSort.sort(source, low, cappedUpperBound, localRunLength);
 		int diff = high - low - 1;
 		return Math.min(diff, cutoff);
 
@@ -244,6 +256,7 @@ public class Timsort<T extends Comparable<T>> {
 	}
 
 	private int computeLevel(int i) {
+		assert i >= 0;
 		long midLeft = (runStart[i] + (long) runLength[i + 1] - 1) / 2;
 		long midRight = (runStart[i + 1] + (long) runLength[i + 2] - 1) / 2;
 		return 64 - Long.numberOfLeadingZeros(midLeft ^ midRight);

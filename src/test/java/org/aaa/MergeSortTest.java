@@ -38,6 +38,23 @@ class MergeSortTest {
 	// Positive cases examples
 
 	@Example
+	void shouldReturnCorrectNumberOfComparisonsWithInsertionSortThreshold() {
+		Integer[] actualOne = {5, 2, 8, 6, 9, 1, 3, 7, 1, 2, 3, 4, 5, 6, 7, 8};
+		int comparisonsOne = MergeSort.sort(actualOne, 4, true);
+		assertThat(comparisonsOne).isEqualTo(41);
+	}
+
+	@Example
+	void shouldReturnCorrectNumberOfComparisons() {
+		Integer[] actualOne = {5, 2, 8, 6, 9, 1, 3, 7};
+		Integer[] actualTwo = {1, 2, 3, 4, 5, 6, 7, 8};
+		int comparisonsOne = MergeSort.sort(actualOne);
+		int comparisonsTwo = MergeSort.sort(actualTwo);
+		assertThat(comparisonsOne).isEqualTo(16);
+		assertThat(comparisonsTwo).isEqualTo(12);
+	}
+
+	@Example
 	void shouldSortNumericFloatingPointArray(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
 		// Internal representation in memory of floating point precision numerals may not be exact and prone
 		// to rounding errors.

@@ -12,6 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InsertionSortTest {
 
+	@Example
+	void shouldReturnCorrectNumberOfComparisons() {
+		Integer[] actualOne = {5, 2, 8, 6, 9, 1, 3, 7};
+		int comparisonsOne = InsertionSort.sort(actualOne);
+		assertThat(comparisonsOne).isEqualTo(18);
+	}
+
 	@Property
 	void insertionSort_shouldBeSortedForAnAlreadySortedSubarray(@ForAll("partiallySortedIntArrayProvider") @NotEmpty @WithNull(value = 0) Integer[] arr) {
 		int offset = arr.length / 2;

@@ -34,7 +34,7 @@ class TimSortTest {
 	@Disabled("inefficient")
 	void shouldSortLargeArray(@ForAll("mergeRuleProvider") MergeRule mergeRule,
 	                          @ForAll boolean isAdaptive,
-	                          @ForAll @IntRange(min = 0, max = 100) int cutoff) {
+	                          @ForAll @IntRange(min = 1, max = 100) int cutoff) {
 		int largeSize = 26_843_545; // approaching upper bound for -Xmx4G
 		Byte[] input = new Byte[largeSize];
 		Timsort.sort(input, 0, input.length, MergeRule.BINOMIALSORT, isAdaptive);
@@ -44,14 +44,35 @@ class TimSortTest {
 	// Positive test cases
 
 	@Property
+	<T extends Comparable<T>> void shouldThrowForCutoffLengthZero(
+			@ForAll("mergeRuleProvider") MergeRule mergeRule,
+			@ForAll boolean isAdaptive,
+			@ForAll("dataTypesUnderTestProvider") T[] arr
+	) {
+		assertThatThrownBy(() -> Timsort.sort(arr, mergeRule, isAdaptive, 0)).message().contains("cutoff must be greater than 0");
+	}
+
+	@Property
 	<T extends Comparable<T>> void shouldHandleSingleElementArray(
 			@ForAll("mergeRuleProvider") MergeRule mergeRule,
 			@ForAll boolean isAdaptive,
-			@ForAll @IntRange(min = 0, max = 100) int cutoff
+			@ForAll @IntRange(min = 1, max = 100) int cutoff
 	) {
 		Integer[] input = {42};
 		Timsort.sort(input, mergeRule, isAdaptive, cutoff);
 		assertThat(input).containsExactly(42);
+	}
+
+	@Property
+	<T extends Comparable<T>> void shouldReturnNMinusOneComparisonsWhenAdaptiveForSortedInput(
+			@ForAll("mergeRuleProvider") MergeRule mergeRule,
+			@ForAll @IntRange(min = 1, max = 100) int cutoff,
+			@ForAll("dataTypesUnderTestProvider") T[] arr
+	) {
+		Assume.that(arr.length > 2);
+		Arrays.sort(arr);
+		int comps = Timsort.sort(arr, mergeRule, true, cutoff);
+		assertThat(comps).isEqualTo(arr.length - 1);
 	}
 
 
