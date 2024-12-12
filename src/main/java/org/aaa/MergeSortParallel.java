@@ -7,10 +7,9 @@ public class MergeSortParallel<T extends Comparable<T>> {
     private static ForkJoinPool pool;
 
     private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high,
-            int insertionThreshold) {
-
+                                                      int insertionThreshold) {
         // if high and low are equal, we only have 1 element which is per definition sorted, and dont add any comparisons
-        if(high == low) return 0;
+        if (high == low) return 0;
 
         int mid = low + (high - low) / 2;
 
@@ -18,12 +17,9 @@ public class MergeSortParallel<T extends Comparable<T>> {
         int rightComparisons;
 
         if (high <= low + insertionThreshold) {
-            System.out.println("Sorting sequentially");
             leftComparisons = sort(source, buffer, low, mid, insertionThreshold);
             rightComparisons = sort(source, buffer, mid + 1, high, insertionThreshold);
         } else {
-            System.out.println("Sorting in parallel");
-
             leftComparisons = pool.submit(() -> sort(source, buffer, low, mid, insertionThreshold))
                     .join();
 
@@ -52,34 +48,34 @@ public class MergeSortParallel<T extends Comparable<T>> {
             } else if (j > high) {
                 source[k] = buffer[i++];
             } else if (Utils.less(buffer[j], buffer[i])) {
-                System.out.println("Comparing: " + buffer[j] + " - " + buffer[i]);
                 source[k] = buffer[j++];
                 comparisons++;
             } else {
-                System.out.println("Comparing: " + buffer[j] + " - " + buffer[i]);
                 source[k] = buffer[i++];
                 comparisons++;
             }
         }
 
-        // System.out.println(comparisons + " merge");
-        // Postcondition
         assert Utils.isSorted(source, low, high);
         return comparisons;
     }
 
-    public static <T extends Comparable<T>> int sortParallel(T[] source, T[] buffer, int low, int high,
-            int insertionThreshold) {
+    public static <T extends Comparable<T>> int sortParallel(T[] source, T[] buffer, int low, int high, int insertionThreshold) {
         pool = new ForkJoinPool(100);
         return sort(source, buffer, low, high, insertionThreshold);
     }
 
+    public static <T extends Comparable<T>> int sortParallel(T[] source, int insertionThreshold) {
+        pool = new ForkJoinPool(100);
+        T[] buffer = (T[]) new Comparable[source.length];
+        return sort(source, buffer, 0, source.length - 1, insertionThreshold);
+    }
+
     public static void main(String[] args) {
-        Integer[] arr = new Integer[] { 5, 2, 8, 6, 9, 1, 3, 7 };
+        Integer[] arr = new Integer[]{5, 2, 8, 6, 9, 1, 3, 7};
         int comp = MergeSortParallel.sortParallel(arr, new Integer[8], 0, arr.length - 1, 0);
         for (Integer i : arr) {
             System.out.println(i);
         }
-        System.out.println("Comparisons: " + comp);
     }
 }
