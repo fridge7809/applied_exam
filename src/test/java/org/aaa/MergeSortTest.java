@@ -38,6 +38,15 @@ class MergeSortTest {
 	// Positive cases examples
 
 	@Example
+	void shouldReturnCorrectParallel() {
+		Integer[] actualOne = {5, 2, 8, 6, 9, 1, 3, 7, 1, 2, 3, 4, 5, 6, 7, 8};
+		Integer[] actualTwo = {5, 2, 8, 6, 9, 1, 3, 7, 1, 2, 3, 4, 5, 6, 7, 8};
+		int comparisonsOne = MergeSort.sort(actualOne, 4, true);
+		int comparisonsTwo = MergeSortParallel.sortParallel(actualTwo, 4);
+		assertThat(comparisonsOne).isEqualTo(comparisonsTwo);
+	}
+
+	@Example
 	void shouldReturnCorrectNumberOfComparisonsWithInsertionSortThreshold() {
 		Integer[] actualOne = {5, 2, 8, 6, 9, 1, 3, 7, 1, 2, 3, 4, 5, 6, 7, 8};
 		int comparisonsOne = MergeSort.sort(actualOne, 4, true);

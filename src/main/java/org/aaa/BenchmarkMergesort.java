@@ -34,6 +34,7 @@ public class BenchmarkMergesort {
 				for (Distribution distribution : Distribution.values()) {
 					for (StringContent content : StringContent.values()) {
 						benchmark(inputType.name(), n, iterations, () -> MergeSort.sort(generateDataOfType(inputType, distribution, content, n)));
+						benchmark(inputType.name() + "TEST", n, iterations, () -> MergeSortParallel.sortParallel(generateDataOfType(inputType, distribution, content, n), 40));
 					}
 				}
 			}
