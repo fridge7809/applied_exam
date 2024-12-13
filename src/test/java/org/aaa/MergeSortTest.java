@@ -37,12 +37,14 @@ class MergeSortTest {
 
 	// Positive cases examples
 
+	// sequential and parallel mergesort works differently. Seq version uses insertion sort when subarray is smaller than threshold, and parallel version uses mergesort sequential when lower than threshold.
+	// we therefore keep threshold as 0 to test these
 	@Example
 	void shouldReturnCorrectParallel() {
 		Integer[] actualOne = {5, 2, 8, 6, 9, 1, 3, 7, 1, 2, 3, 4, 5, 6, 7, 8};
 		Integer[] actualTwo = {5, 2, 8, 6, 9, 1, 3, 7, 1, 2, 3, 4, 5, 6, 7, 8};
-		int comparisonsOne = MergeSort.sort(actualOne, 4, true);
-		int comparisonsTwo = MergeSortParallel.sortParallel(actualTwo, 4);
+		int comparisonsOne = MergeSort.sort(actualOne, 0, true);
+		int comparisonsTwo = MergeSortParallel.sortParallel(actualTwo, 0);
 		assertThat(comparisonsOne).isEqualTo(comparisonsTwo);
 	}
 
