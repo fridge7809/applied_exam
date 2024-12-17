@@ -2,13 +2,10 @@ package org.aaa;
 
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.IntRange;
-import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.constraints.WithNull;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -212,12 +209,12 @@ class MergeSortTest {
 				);
 	}
 
-	@UniqueElements
 	Arbitrary<Integer[]> distinctIntegerArrayProvider() {
 		return Arbitraries.integers()
 				.between(0, 100)
 				.array(Integer[].class)
 				.ofMinSize(1)
+				.uniqueElements()
 				.map(arr -> {
 					Arrays.sort(arr);
 					return arr;

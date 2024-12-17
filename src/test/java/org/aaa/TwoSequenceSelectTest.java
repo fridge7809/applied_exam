@@ -1,10 +1,9 @@
 package org.aaa;
 
-import net.jqwik.api.Example;
-import net.jqwik.api.ForAll;
-import net.jqwik.api.Property;
+import net.jqwik.api.*;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -159,5 +158,58 @@ public class TwoSequenceSelectTest {
         assertThat(valueAtKthPositionFromMergedArray).isEqualTo(actualValueAtKthPositionFromTwoSeq);
     }
 
-    
+    @Example
+    void shouldFindRanksInterchangeably() {
+        Pair[] a = new Pair[] {new Pair<>(1, 0), new Pair(3, 1), new Pair(5, 2)};
+        Pair[] b = new Pair[] {new Pair<>(2, 0), new Pair(4, 1), new Pair(6, 2)};
+
+        int totalLength = a.length + b.length;
+        for (int i = 0; i < totalLength; i++) {
+            assertThat(TwoSequenceSelect.find(a, b, i)).containsExactly(find(a, b, i));
+        }
+    }
+
+    public static int[] find(Pair[] a, Pair[] b, int k) {
+        int i = 0, j = 0;
+
+        while (k > 0) {
+            if (i <= j) {
+                i++;
+            } else {
+                j++;
+            }
+            k--;
+        }
+
+        return new int[] {i, j};
+    }
+
+
+
+
+    @Provide
+    Arbitrary<List<Pair<Integer, Integer>>> pairListProvider() {
+        Arbitrary<Integer> leftValueProvider = Arbitraries.integers().between(0, 100).injectDuplicates(0.7);
+        return Combinators.combine(leftValueProvider, distinctIntegerArrayProvider())
+                .as((_, rightArr) ->
+                        Arrays.stream(rightArr)
+                                .map(right -> new Pair<>(leftValueProvider.sample(), right))
+                                .distinct()
+                                .toList()
+                );
+    }
+
+    Arbitrary<Integer[]> distinctIntegerArrayProvider() {
+        return Arbitraries.integers()
+                .between(0, 100)
+                .array(Integer[].class)
+                .ofMinSize(1)
+                .uniqueElements()
+                .map(arr -> {
+                    Arrays.sort(arr);
+                    return arr;
+                });
+    }
+
+
 }

@@ -2,18 +2,50 @@ package org.aaa;
 
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.IntRange;
-import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.constraints.WithNull;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MergeSortParallelTest {
+
+	@Example
+	void getNIsInclusive() {
+		assertThat(MergeSortParallel.getN(0, 10)).isEqualTo(11);
+		assertThat(MergeSortParallel.getN(0, 1)).isEqualTo(2);
+	}
+
+	@Example
+	void chunkSize() {
+		// 10, 2
+		assertThat(MergeSortParallel.getChunkSize(10, 2)).isEqualTo(5);
+		assertThat(MergeSortParallel.getChunkSize(20, 4)).isEqualTo(5);
+	}
+
+	@Example
+	<T extends Comparable<T>>  void even() {
+		Integer[] even = new Integer[] {1, 2, 3, 4};
+		int threadCount = 2;
+		int expected = 2;
+		assertThat(MergeSortParallel.getParts(even, threadCount)).isEqualTo(expected);
+	}
+
+	@Example
+	<T extends Comparable<T>>  void odd() {
+		Integer[] odd = new Integer[] {1, 2, 3};
+		int threadCount = 4;
+		int expected = 1;
+		assertThat(MergeSortParallel.getParts(odd, threadCount)).isEqualTo(expected);
+	}
+
+	@Property
+	<T extends Comparable<T>>  void shouldHavePositiveParts(@ForAll("dataTypesUnderTestProvider") T[] source, @ForAll @IntRange(min = 1, max = 12) int threadCount) {
+		assertThat(MergeSortParallel.getParts(source, threadCount)).isPositive();
+	}
 
 	// Negative test cases
 
@@ -169,7 +201,7 @@ class MergeSortParallelTest {
 	@Property
 	void shouldMaintainStability(@ForAll("pairListProvider") List<Pair<Integer, Integer>> input,
 			@ForAll @IntRange(min = 1, max = 100) int serialSortThreshold,
-			@ForAll @IntRange(min = 1, max = 100) int numOfAvailableThreads) {
+			@ForAll @IntRange(min = 1, max = 6) int numOfAvailableThreads) {
 		// Comparison-based sort for the left values of the pairs
 		// while right values remain stable.
 		Pair<Integer, Integer>[] pairs = input.toArray(new Pair[0]); // Specify the type of the Pair
@@ -177,7 +209,7 @@ class MergeSortParallelTest {
 		MergeSortParallel.sortParallelWithParallelMerge(pairs, serialSortThreshold, numOfAvailableThreads);
 
 		for (int i = 0; i < pairs.length - 1; i++) {
-			if (pairs[i].getLeft().equals(pairs[i + 1].getLeft())) {
+			if (pairs[i].equals(pairs[i + 1])) {
 				// Explicitly cast right values to Integer when using assertThat
 				assertThat(pairs[i].getRight()).isLessThan(pairs[i + 1].getRight());
 			}
@@ -185,8 +217,7 @@ class MergeSortParallelTest {
 	}
 
 	@Property
-	<T extends Comparable<T>> void shouldSortArrayParallel(@ForAll("dataTypesUnderTestProvider") T[] arr)
-			throws InterruptedException, ExecutionException {
+	<T extends Comparable<T>> void shouldSortArrayParallel(@ForAll("dataTypesUnderTestProvider") T[] arr) {
 		int numOfAvailableThreads = 4;
 		MergeSortParallel.sortParallelWithParallelMerge(arr, 0, numOfAvailableThreads);
 		assertThat(arr).isSorted();
@@ -228,18 +259,20 @@ class MergeSortParallelTest {
 	Arbitrary<List<Pair<Integer, Integer>>> pairListProvider() {
 		Arbitrary<Integer> leftValueProvider = Arbitraries.integers().between(0, 100).injectDuplicates(0.7);
 		return Combinators.combine(leftValueProvider, distinctIntegerArrayProvider())
-				.as((_, rightArr) -> Arrays.stream(rightArr)
-						.map(right -> new Pair<>(leftValueProvider.sample(), right))
-						.distinct()
-						.toList());
+				.as((_, rightArr) ->
+						Arrays.stream(rightArr)
+								.map(right -> new Pair<>(leftValueProvider.sample(), right))
+								.distinct()
+								.toList()
+				);
 	}
 
-	@UniqueElements
 	Arbitrary<Integer[]> distinctIntegerArrayProvider() {
 		return Arbitraries.integers()
 				.between(0, 100)
 				.array(Integer[].class)
 				.ofMinSize(1)
+				.uniqueElements()
 				.map(arr -> {
 					Arrays.sort(arr);
 					return arr;

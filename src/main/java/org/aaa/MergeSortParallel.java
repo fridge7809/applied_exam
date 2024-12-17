@@ -3,6 +3,7 @@ package org.aaa;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
@@ -83,54 +84,82 @@ public class MergeSortParallel {
             rightComparisons = pool.submit(() -> sortWithParallelMerge(source, buffer, mid + 1, high, serialSortThreshold)).join();
         }
 
-        // int p = 2; // define p value??
         return leftComparisons + rightComparisons + mergeParallel(source, buffer, low, mid, high);
     }
 
     private static <T extends Comparable<T>> int mergeParallel(T[] source, T[] buffer, int low, int mid, int high) {
-        int n = high - low + 1; // Total size of the range to merge
-        int chunkSize = (n + parts - 1) / parts; // Divide the range into p parts
+        // extracted these to package private methods for testing to ensure absense of off by ones (╯°□°)╯︵ ┻━┻
 
-        List<Future<Integer>> futures = new ArrayList<>();
+        int n = getN(low, high);
+        int chunkSize = getChunkSize(n, parts);
+
+
+        List<Callable<Integer>> tasks = new ArrayList<>();
         T[] leftSubarray = Arrays.copyOfRange(source, low, mid + 1);
         T[] rightSubarray = Arrays.copyOfRange(source, mid + 1, high + 1);
+
+        if (n == 1) { // one element doesnt need merging
+            buffer[0] = source[0];
+            return 0;
+        }
+
+        if (n == 2) { // parallel merge for merging for 2 elements is overkill
+            return merge(source, buffer, low, mid, high);
+        }
 
         for (int task = 0; task < parts; task++) {
             final int start = task * chunkSize;
             final int end = Math.min(n - 1, start + chunkSize - 1);
-            futures.add(pool.submit(() -> {
-                int comparisons = 0;
-                for (int k = start; k <= end; k++) {
-                    int[] ranks = TwoSequenceSelect.find(leftSubarray, rightSubarray, k);
-                    int ia = ranks[0];
-                    int ib = ranks[1];
+            final int middle = (start + end) / 2;
 
-                    if (ib >= rightSubarray.length || (ia < leftSubarray.length && leftSubarray[ia].compareTo(rightSubarray[ib]) <= 0)) {
-                        buffer[low + k] = leftSubarray[ia];
-                    } else {
-                        buffer[low + k] = rightSubarray[ib];
-                    }
+            tasks.add(() -> {
+                int comparisons = 0;
+                for (int i = start; i < middle; i++) {
+                    int ib = TwoSequenceSelect.find(leftSubarray, rightSubarray, i)[1];
+                    int rank = i + ib;
+                    buffer[rank] = source[i];
                     comparisons++;
                 }
                 return comparisons;
-            }));
+            });
+
+            tasks.add(() -> {
+                int comparisons = 0;
+                for (int i = middle; i < end; i++) {
+                    int ia = TwoSequenceSelect.find(leftSubarray, rightSubarray, i)[0];
+                    int rank = i + ia;
+                    buffer[rank] = source[i];
+                    comparisons++;
+                }
+                return comparisons;
+            });
+
         }
 
         // Collect results
         int totalComparisons = 0;
         int count = 0;
-        for (Future<Integer> future : futures) {
-            count++;
             try {
-                totalComparisons += future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                List<Future<Integer>> results = pool.invokeAll(tasks);
+                for (Future<Integer> future : results) {
+                    count++;
+                    totalComparisons += future.get();
+                }
+            } catch (InterruptedException | ExecutionException | AssertionError a) {
+                a.printStackTrace();
             }
-        }
         System.out.println(count + " Futures count");
 
         System.arraycopy(buffer, low, source, low, n);
         return totalComparisons;
+    }
+
+    static int getChunkSize(int elements, int parts) {
+        return (elements + parts - 1) / parts;
+    }
+
+    static int getN(int low, int high) {
+        return high - low + 1;
     }
 
     public static <T extends Comparable<T>> int sortParallel(T[] source, T[] buffer, int low, int high,
@@ -155,7 +184,7 @@ public class MergeSortParallel {
 
         threadCount = Math.max(threadCount, 1);
         pool = new ForkJoinPool(threadCount);
-        parts = Math.max(1, source.length / threadCount);
+        parts = getParts(source, threadCount);
 
         System.out.println(parts + " equalparts size");
 
@@ -164,12 +193,16 @@ public class MergeSortParallel {
         return sortWithParallelMerge(source, buffer, 0, source.length - 1, serialSortThreshold);
     }
 
+    static <T extends Comparable<T>> int getParts(T[] source, int threadCount) {
+        return Math.max(1, source.length / threadCount);
+    }
+
     public static void main(String[] args) {
-        Double[] arr = new Double[]{1.1, 1.2, 1.19, 1.09, 1.10};
-        int threadCount = 4;
+        Pair[] arr = List.of(new Pair(2, 0), new Pair(76,1), new Pair(2, 3), new Pair(2, 4)).toArray(Pair[]::new);
+        int threadCount = 2;
         int comparisons = MergeSortParallel.sortParallelWithParallelMerge(arr, 0, threadCount);
         System.out.println(comparisons);
-        for (Double i : arr) {
+        for (Pair i : arr) {
             System.out.println(i);
         }
     }
