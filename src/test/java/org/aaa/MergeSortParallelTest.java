@@ -109,9 +109,13 @@ class MergeSortParallelTest {
 	}
 
 	@Example
-	void shouldHandleDuplicateUnicodeCharacters(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
+	void shouldHandleDuplicateUnicodeCharacters() {
 		Character[] input = {'a', 'A', 'a', 'A', 'b', 'B'};
-		MergeSort.sort(input, cutoff, useThreshold);
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(input, 0, 4);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		assertThat(input).containsExactly('A', 'A', 'B', 'a', 'a', 'b');
 	}
 
@@ -119,26 +123,39 @@ class MergeSortParallelTest {
 	@Example
 	void shouldHandleAllZeroes(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
 		Byte[] input = {0, 0, 0, 0, 0, 0};
-		MergeSort.sort(input, cutoff, useThreshold);
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(input, 0, 4);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		assertThat(input).containsExactly((byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0);
 	}
 
 	@Example
-	void shouldSortArrayWithLargeAndSmallNumbers(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
+	void shouldSortArrayWithLargeAndSmallNumbers(@ForAll @IntRange(min = 0, max = 100) int serialSortThreshold, @ForAll int numOfAvailableThreads) {
 		Integer[] input = {Integer.MAX_VALUE, Integer.MIN_VALUE, 0, -1, 1};
-		MergeSort.sort(input, cutoff, useThreshold);
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(input, serialSortThreshold, numOfAvailableThreads);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		assertThat(input).containsExactly(Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Example
-	void shouldMaintainStabilityForReferenceTypes(@ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
+	void shouldMaintainStabilityForReferenceTypes(@ForAll @IntRange(min = 0, max = 100) int serialSortThreshold, @ForAll int numOfAvailableThreads) {
 		List<Pair<Integer, Integer>> input = Arrays.asList(
 				new Pair<>(1, 0), new Pair<>(2, 1), new Pair<>(1, 2), new Pair<>(2, 3)
 		);
 		Pair[] pairs = input.toArray(new Pair[0]);
 		Integer[] rightValues = input.stream().map(Pair::getRight).toArray(Integer[]::new);
 
-		MergeSort.sort(pairs, cutoff, useThreshold);
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(pairs, serialSortThreshold, numOfAvailableThreads);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 
 		for (int i = 0; i < pairs.length - 1; i++) {
 			if (pairs[i].equals(pairs[i + 1])) {
@@ -150,25 +167,37 @@ class MergeSortParallelTest {
 	// Positive test cases
 
 	@Property
-	<T extends Comparable<T>> void sortedArrayShouldContainAllOriginalElements(@ForAll("dataTypesUnderTestProvider") T[] arr, @ForAll @IntRange(min = 1, max = 100) int cutoff, @ForAll boolean useThreshold) {
+	<T extends Comparable<T>> void sortedArrayShouldContainAllOriginalElements(@ForAll("dataTypesUnderTestProvider") T[] arr, @ForAll @IntRange(min = 1, max = 100) int serialSortThreshold, @ForAll @IntRange(min = 1, max = 100) int numOfAvailableThreads) {
 		List<T> objects = Arrays.stream(arr).toList();
-		MergeSort.sort(arr, cutoff, useThreshold);
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(arr, serialSortThreshold, numOfAvailableThreads);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		assertThat(arr).containsAll(objects);
 	}
 
 	@Property
-	<T extends Comparable<T>> void shouldSortArray(@ForAll("dataTypesUnderTestProvider") T[] arr, @ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
-		MergeSort.sort(arr, cutoff, useThreshold);
+	<T extends Comparable<T>> void shouldSortArray(@ForAll("dataTypesUnderTestProvider") T[] arr, @ForAll @IntRange(min = 1, max = 100) int serialSortThreshold, @ForAll @IntRange(min = 1, max = 100) int numOfAvailableThreads) {
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(arr, serialSortThreshold, numOfAvailableThreads);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		assertThat(arr).isSorted();
 	}
 
 	@Property
-	void shouldMaintainStability(@ForAll("pairListProvider") List<Pair<Integer, Integer>> input, @ForAll @IntRange(min = 0, max = 100) int cutoff, @ForAll boolean useThreshold) {
+	void shouldMaintainStability(@ForAll("pairListProvider") List<Pair<Integer, Integer>> input, @ForAll @IntRange(min = 1, max = 100) int serialSortThreshold, @ForAll @IntRange(min = 1, max = 100) int numOfAvailableThreads) {
 		// Comparison-based sort for the left values of the pairs
 		// while right values remain stable.
 		Pair<Integer, Integer>[] pairs = input.toArray(new Pair[0]); // Specify the type of the Pair
 
-		MergeSort.sort(pairs, cutoff, useThreshold);
+		try {
+			MergeSortParallel.sortParallelWithParallelMerge(pairs, serialSortThreshold, numOfAvailableThreads);
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 
 		for (int i = 0; i < pairs.length - 1; i++) {
 			if (pairs[i].getLeft().equals(pairs[i + 1].getLeft())) {
