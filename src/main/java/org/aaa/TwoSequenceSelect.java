@@ -27,8 +27,6 @@ public class TwoSequenceSelect {
             } else if (ibIsTooLarge) {
                 low = mid + 1;
             } else {
-                assert allValuesBelowRankIsSmallerThanK(a, ia, k);
-                assert allValuesBelowRankIsSmallerThanK(b, ib, k);
                 assert ia + ib == k;
                 return new int[]{(int) ia, (int) ib};
             }
@@ -37,19 +35,8 @@ public class TwoSequenceSelect {
         long ia = low;
         long ib = k - ia;
 
-        assert allValuesBelowRankIsSmallerThanK(a, ia, k);
-        assert allValuesBelowRankIsSmallerThanK(b, ib, k);
         assert ia + ib == k;
         return new int[]{(int) ia, (int) ib};
-    }
-
-    private static <T extends Comparable<T>> boolean allValuesBelowRankIsSmallerThanK(T[] array, long rank, long k) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i].compareTo(array[(int) k]) > 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static <T extends Comparable<T>> boolean isSorted(T[] array) {
