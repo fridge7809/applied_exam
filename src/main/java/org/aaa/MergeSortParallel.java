@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.stream.IntStream;
 
 import static org.aaa.Utils.isSorted;
 import static org.aaa.Utils.less;
@@ -130,7 +129,7 @@ public class MergeSortParallel {
         }
         System.out.println(count + " Futures count");
 
-        IntStream.range(low, n).parallel().forEach(i -> source[i] = buffer[i]);
+        System.arraycopy(buffer, low, source, low, n);
         return totalComparisons;
     }
 
