@@ -119,13 +119,11 @@ public class MergeSortParallel<T extends Comparable<T>> {
             futures.add(pool.submit(() -> {
                 int comparisons = 0;
                 for (int k = start; k <= end; k++) {
-                    Integer[] twoSeq = TwoSequenceSelect.find((Integer[]) leftSubarray, (Integer[]) rightSubarray,
-                            k);
-                    int ia = twoSeq[0];
-                    int ib = twoSeq[1];
+                    int[] ranks = TwoSequenceSelect.find(leftSubarray, rightSubarray, k);
+                    int ia = ranks[0];
+                    int ib = ranks[1];
 
-                    if (ib >= rightSubarray.length
-                            || (ia < leftSubarray.length && leftSubarray[ia].compareTo(rightSubarray[ib]) <= 0)) {
+                    if (ib >= rightSubarray.length || (ia < leftSubarray.length && leftSubarray[ia].compareTo(rightSubarray[ib]) <= 0)) {
                         buffer[low + k] = leftSubarray[ia];
                     } else {
                         buffer[low + k] = rightSubarray[ib];
