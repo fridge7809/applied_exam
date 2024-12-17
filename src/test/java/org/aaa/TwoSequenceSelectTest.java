@@ -103,6 +103,23 @@ public class TwoSequenceSelectTest {
         assertArrayEquals(expected, result);
     }
 
+    @Example
+    void shouldHandleNegativeNumbers() {
+        Integer[] a = {-3, -1};
+        Integer[] b = {Integer.MIN_VALUE, 2, Integer.MAX_VALUE};
+        int k = 2;
+        Integer[] actual = TwoSequenceSelect.find(a, b, k);
+        assertThat(actual).containsExactly(1, 1);
+    }
+
+    @Example
+    void shouldNotUnderflowForMidCalculation() {
+        long low = Integer.MAX_VALUE - 100;
+        long high = Integer.MAX_VALUE - 50;
+        long mid = (low + high) / 2;
+        assertThat(mid).isPositive();
+    }
+
 
     @Example
     void valuesCorrespondToCorrectIndicesInMergedArray() {

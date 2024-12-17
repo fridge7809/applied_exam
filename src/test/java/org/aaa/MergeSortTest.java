@@ -5,8 +5,10 @@ import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.constraints.WithNull;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -163,6 +165,14 @@ class MergeSortTest {
 				assertThat(pairs[i].getRight()).isLessThan(pairs[i + 1].getRight());
 			}
 		}
+	}
+
+
+	@Property
+	<T extends Comparable<T>> void shouldSortArrayParallel(@ForAll("dataTypesUnderTestProvider") T[] arr) throws InterruptedException, ExecutionException {
+		int numOfAvailableThreads = 4;		
+		MergeSortParallel.sortParallelWithParallelMerge(arr, 0, arr.length - 1, 0, numOfAvailableThreads);
+		assertThat(arr).isSorted();
 	}
 
 	// Data types for test
