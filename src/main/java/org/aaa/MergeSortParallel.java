@@ -13,7 +13,7 @@ public class MergeSortParallel<T extends Comparable<T>> {
     private static int equalPartsOfOutputArray;
 
     private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high,
-            int insertionThreshold) {
+            int serialSortThreshold) {
         // if high and low are equal, we only have 1 element which is per definition
         // sorted, and dont add any comparisons
         if (high == low)
@@ -24,14 +24,14 @@ public class MergeSortParallel<T extends Comparable<T>> {
         int leftComparisons;
         int rightComparisons;
 
-        if (high <= low + insertionThreshold) {
-            leftComparisons = sort(source, buffer, low, mid, insertionThreshold);
-            rightComparisons = sort(source, buffer, mid + 1, high, insertionThreshold);
+        if (high <= low + serialSortThreshold) {
+            leftComparisons = sort(source, buffer, low, mid, serialSortThreshold);
+            rightComparisons = sort(source, buffer, mid + 1, high, serialSortThreshold);
         } else {
-            leftComparisons = pool.submit(() -> sort(source, buffer, low, mid, insertionThreshold))
+            leftComparisons = pool.submit(() -> sort(source, buffer, low, mid, serialSortThreshold))
                     .join();
 
-            rightComparisons = pool.submit(() -> sort(source, buffer, mid + 1, high, insertionThreshold))
+            rightComparisons = pool.submit(() -> sort(source, buffer, mid + 1, high, serialSortThreshold))
                     .join();
         }
 
@@ -95,15 +95,14 @@ public class MergeSortParallel<T extends Comparable<T>> {
         return leftComparisons + rightComparisons + mergeParallel(source, buffer, low, mid, high);
     }
 
-
-
     private static <T extends Comparable<T>> int mergeParallel(T[] source, T[] buffer, int low, int mid, int high) {
 
         // // serially merging subarrays that are smaller than the equal parts of the
         // // output array.
-        // if ((mid + 1 - low) < equalPartsOfOutputArray) { // 4 should be the size of the equal part in the output array.
-        //                                                  // 4 could be splitting 16 into 4
-        //     return merge(source, buffer, low, mid, high);
+        // if ((mid + 1 - low) < equalPartsOfOutputArray) { // 4 should be the size of
+        // the equal part in the output array.
+        // // 4 could be splitting 16 into 4
+        // return merge(source, buffer, low, mid, high);
         // }
 
         int n = high - low + 1; // Total size of the range to merge
@@ -153,37 +152,44 @@ public class MergeSortParallel<T extends Comparable<T>> {
     }
 
     public static <T extends Comparable<T>> int sortParallel(T[] source, T[] buffer, int low, int high,
-            int insertionThreshold) {
+            int serialSortThreshold) {
         pool = new ForkJoinPool(6);
-        return sort(source, buffer, low, high, insertionThreshold);
+        return sort(source, buffer, low, high, serialSortThreshold);
     }
 
-    public static <T extends Comparable<T>> int sortParallel(T[] source, int insertionThreshold) {
+    public static <T extends Comparable<T>> int sortParallel(T[] source, int serialSortThreshold) {
         pool = new ForkJoinPool(6);
         T[] buffer = (T[]) new Comparable[source.length];
-        return sort(source, buffer, 0, source.length - 1, insertionThreshold);
+        return sort(source, buffer, 0, source.length - 1, serialSortThreshold);
     }
 
-    public static <T extends Comparable<T>> int sortParallelWithParallelMerge(T[] source, int low, int high,
-            int insertionThreshold, int numOfAvailableThreads) throws InterruptedException, ExecutionException {
-        if(source.length < 2) return 0;
-        if (numOfAvailableThreads < 1) numOfAvailableThreads = 1;
+    public static <T extends Comparable<T>> int sortParallelWithParallelMerge(T[] source,
+            int serialSortThreshold, int numOfAvailableThreads) throws InterruptedException, ExecutionException {
+        if (source == null || source.length == 0) {
+            throw new IllegalArgumentException("Array is null or empty");
+        }
+        if (source.length < 2)
+            return 0;
+        if (numOfAvailableThreads < 1)
+            numOfAvailableThreads = 1;
         pool = new ForkJoinPool(numOfAvailableThreads);
         equalPartsOfOutputArray = source.length / numOfAvailableThreads;
-        if(equalPartsOfOutputArray < 1) equalPartsOfOutputArray = 1;
+        if (equalPartsOfOutputArray < 1)
+            equalPartsOfOutputArray = 1;
         System.out.println(equalPartsOfOutputArray + " equalparts size");
-		T[] buffer = (T[]) new Comparable[source.length];
+        T[] buffer = (T[]) new Comparable[source.length];
 
-        return sortWithParallelMerge(source, buffer, low, high, insertionThreshold);
+        return sortWithParallelMerge(source, buffer, 0, source.length - 1, serialSortThreshold);
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        Integer[] arr = new Integer[] { 1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6, 4, 5, 6, 0, 1, 0, 1 };
+        //Integer[] arr = new Integer[] { 1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6, 4, 5, 6, 7 };
+        Double[] arr = new Double[]{1.1, 1.2, 1.19, 1.09, 1.10};
         int numOfAvailableThreads = 4;
-        int comp = MergeSortParallel.sortParallelWithParallelMerge(arr, 0, arr.length - 1, 0,
+        int comp = MergeSortParallel.sortParallelWithParallelMerge(arr, 0,
                 numOfAvailableThreads);
         System.out.println(comp);
-        for (Integer i : arr)
+        for (Double i : arr)
             System.out.println(i);
     }
 }

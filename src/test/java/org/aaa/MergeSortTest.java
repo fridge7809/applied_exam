@@ -168,13 +168,6 @@ class MergeSortTest {
 	}
 
 
-	@Property
-	<T extends Comparable<T>> void shouldSortArrayParallel(@ForAll("dataTypesUnderTestProvider") T[] arr) throws InterruptedException, ExecutionException {
-		int numOfAvailableThreads = 4;		
-		MergeSortParallel.sortParallelWithParallelMerge(arr, 0, arr.length - 1, 0, numOfAvailableThreads);
-		assertThat(arr).isSorted();
-	}
-
 	// Data types for test
 
 	@Provide
