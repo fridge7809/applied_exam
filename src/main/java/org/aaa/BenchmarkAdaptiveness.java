@@ -25,7 +25,7 @@ public class BenchmarkAdaptiveness {
 			throw new IllegalArgumentException("Usage: java BenchmarkAdaptiveness <inputsize> <iterations> <exponentUpperBound> \n example java BenchmarkAdaptiveness 100000 5 15");
 		}
 
-		// 65536 2 15
+		// 65536 5 13
 		double inputSize = Double.parseDouble(args[0]);
 		double[] inputSizes = new double[]{inputSize};
 		int exponent = Integer.parseInt(args[2]);

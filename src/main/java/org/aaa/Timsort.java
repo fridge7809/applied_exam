@@ -107,12 +107,9 @@ public class Timsort<T extends Comparable<T>> {
 	}
 
 	public static void main(String[] args) {
-		Integer[] input = {1, 2, 3, 4};
-		Integer[] input2 = {1, -1, 2, -2};
-		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.BINOMIALSORT, true);
-		int comps2 = Timsort.sort(input2, 0, input.length, 2, MergeRule.BINOMIALSORT, true);
+		Integer[] input = {8, 3, 7, 6, 2, 5, 1, 4};
+		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.LEVELSORT, false);
 		System.out.println(comps);
-		System.out.println(comps2);
 	}
 
 	public static <T extends Comparable<T>> int sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
@@ -211,8 +208,9 @@ public class Timsort<T extends Comparable<T>> {
 		int comps = 0;
 		while (stackSize > 1) {
 			int newRun = stackSize - 1;
-			int localLevel = computeLevel(newRun - 1);
-			if (topLevel < localLevel) {
+			int localLevel = computeLevel(newRun);
+			if (localLevel > topLevel) {
+				System.out.println("MERGING");
 				comps += mergeAt(newRun - 1);
 				topLevel = localLevel;
 			} else {
@@ -274,8 +272,11 @@ public class Timsort<T extends Comparable<T>> {
 
 	private int computeLevel(int i) {
 		assert i >= 0;
-		long midLeft = (runStart[i] + (long) runLength[i + 1] - 1) / 2;
-		long midRight = (runStart[i + 1] + (long) runLength[i + 2] - 1) / 2;
-		return 64 - Long.numberOfLeadingZeros(midLeft ^ midRight);
+		long ia = runStart[i - 1];
+		long ib = runStart[i];
+		long ic = ib + runLength[i];
+		long ml = (ia + ib) / 2;
+		long mr = (ib + ic) / 2;
+		return 64 - Long.numberOfLeadingZeros(ml ^ mr);
 	}
 }
