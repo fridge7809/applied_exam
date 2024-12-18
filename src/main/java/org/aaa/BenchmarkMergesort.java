@@ -11,6 +11,7 @@ import static org.aaa.DataGenerator.*;
 public class BenchmarkMergesort {
 
 	static StringBuilder builder = new StringBuilder();
+	static int WARMUPS = 5;
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
@@ -30,13 +31,14 @@ public class BenchmarkMergesort {
 
 		for (int n : inputSizes) {
 			System.out.println("task 2 progress:    starting N:     " + n);
-			for (InputType inputType : InputType.values()) {
-				for (Distribution distribution : Distribution.values()) {
-					for (StringContent content : StringContent.values()) {
-						benchmark(inputType.name(), n, iterations, () -> MergeSort.sort(generateDataOfType(inputType, distribution, content, n)));
-						benchmark(inputType.name() + "TEST", n, iterations, () -> MergeSortParallel.sortParallel(generateDataOfType(inputType, distribution, content, n), 40));
-					}
-				}
+
+			// the parameters for generatedataoftype are misleading, beware
+			for (Distribution distribution : Distribution.values()) {
+				benchmark(InputType.INTS.name() + "_" + distribution, n, iterations, () -> MergeSort.sort(generateDataOfType(InputType.INTS, distribution, StringContent.FIXED_LENGTH, n)));
+			}
+
+			for (StringContent content : StringContent.values()) {
+				benchmark(InputType.STRINGS.name() + "_" + content, n, iterations, () -> MergeSort.sort(generateDataOfType(InputType.STRINGS, Distribution.ASCENDING, content, n)));
 			}
 
 			System.out.println("task 2 progress:    completed N:    " + n);
@@ -49,12 +51,14 @@ public class BenchmarkMergesort {
 	public static void benchmark(String name, int n, int iterations, Callable<?> task) throws Exception {
 		int[] comparisons = new int[iterations];
 		long[] times = new long[iterations];
-		for (int i = 0; i < iterations; i++) {
+		for (int i = 0; i < iterations + WARMUPS; i++) {
 			long startTime = System.nanoTime();
 			int count = (int) task.call();
 			long endTime = System.nanoTime();
-			comparisons[i] = count;
-			times[i] = (endTime - startTime);
+			if (i > WARMUPS - 1) {
+				comparisons[i - WARMUPS] = count;
+				times[i - WARMUPS] = (endTime - startTime);
+			}
 		}
 		Arrays.sort(comparisons);
 		Arrays.sort(times);

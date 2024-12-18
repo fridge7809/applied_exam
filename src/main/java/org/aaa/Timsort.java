@@ -32,7 +32,6 @@ public class Timsort<T extends Comparable<T>> {
 		this.comparisons = 0;
 		runStart = new int[stackLength];
 		runLength = new int[stackLength];
-
 	}
 
 	public static <T extends Comparable<T>> void sort(T[] source, int low, int high, MergeRule mergeRule, boolean isAdaptive) {
@@ -184,12 +183,12 @@ public class Timsort<T extends Comparable<T>> {
 
 	private void mergeBinomialSort() {
 		while (stackSize > 1) {
-			int ny = stackSize - 1;
-			while (stackSize > 2 && (runLength[ny - 1] < runLength[ny])) {
-				mergeAt(ny - 2);
+			int newRun = stackSize - 1;
+			while (stackSize > 2 && (runLength[newRun - 1] < runLength[newRun])) {
+				mergeAt(newRun - 2);
 			}
-			if (runLength[ny - 1] < 2 * runLength[ny]) {
-				mergeAt(ny - 1);
+			if (runLength[newRun - 1] < 2 * runLength[newRun]) {
+				mergeAt(newRun - 1);
 			} else {
 				break;
 			}
@@ -198,10 +197,10 @@ public class Timsort<T extends Comparable<T>> {
 
 	private void mergeLevelSort() {
 		while (stackSize > 1) {
-			int n = stackSize - 1;
-			int localLevel = computeLevel(n - 1);
+			int newRun = stackSize - 1;
+			int localLevel = computeLevel(newRun - 1);
 			if (topLevel < localLevel) {
-				mergeAt(n - 1);
+				mergeAt(newRun - 1);
 				topLevel = localLevel;
 			} else {
 				break;

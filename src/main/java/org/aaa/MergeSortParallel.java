@@ -103,15 +103,14 @@ public class MergeSortParallel {
             return 0;
         }
 
-        if (n == 2) { // parallel merge for merging for 2 elements is overkill
+        if (n < 4) { // parallel merge for merging for 2 elements is overkill
             return merge(source, buffer, low, mid, high);
         }
 
         for (int task = 0; task < parts; task++) {
             final int start = task * chunkSize;
             final int end = Math.min(n - 1, start + chunkSize - 1);
-            final int middle = (start + end) / 2;
-
+            final int middle = (end + start) / 2;
             tasks.add(() -> {
                 int comparisons = 0;
                 for (int i = start; i < middle; i++) {
@@ -133,8 +132,8 @@ public class MergeSortParallel {
                 }
                 return comparisons;
             });
-
         }
+
 
         // Collect results
         int totalComparisons = 0;
@@ -198,12 +197,9 @@ public class MergeSortParallel {
     }
 
     public static void main(String[] args) {
-        Pair[] arr = List.of(new Pair(2, 0), new Pair(76,1), new Pair(2, 3), new Pair(2, 4)).toArray(Pair[]::new);
-        int threadCount = 2;
+        Integer[] arr = new Integer[] {1,2,3,4,5,6,7,8, 9, 10, 11, 12, 13, 14, 15, 16};
+        int threadCount = 4;
         int comparisons = MergeSortParallel.sortParallelWithParallelMerge(arr, 0, threadCount);
-        System.out.println(comparisons);
-        for (Pair i : arr) {
-            System.out.println(i);
-        }
+        System.out.println(Arrays.toString(arr));
     }
 }

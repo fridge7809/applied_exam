@@ -1,5 +1,4 @@
 #!/bin/bash
-
 COOKIE_FILE="./output/dependency_check.cookie"
 
 mkdir -p ./output
@@ -25,15 +24,22 @@ fi
 
 echo "Build and test OK"
 
-# problemSize iterations
-java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesort "1000,10000,100000" "25"
+####### TASK 2 ###########
+# <problemsize> <iterations>
+# java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesort "16384,32768,65536,131072,262144" "50"
 
-# algorithmname iterations upperboundofrange
-#java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented timsort "1" "200"
-#java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented mergesort "1" "200"
 
-python3 task2.py "output/task2results.csv" "INTS" "output/task2_ints_plot.svg"
-python3 task2.py "output/task2results.csv" "STRINGS" "output/task2_strings_plot.svg"
+####### TASK 4 && TASK 7 ###########
+# <algorithmname> <iterations> <parameter_C_upper_bound>
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented timsort "50" "80"
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented mergesort "50" "80"
+
+# python3 task2.py "output/task2results.csv" "output/task2_plot.png"
+
+## DEPRECATED - for plotting data types separately
+#python3 task2.py "output/task2results.csv" "INTS" "output/task2_ints_plot.svg"
+#python3 task2.py "output/task2results.csv" "STRINGS" "output/task2_strings_plot.svg"
+
 python3 task4.py "output/task4mergesortresults.csv" "output/task4mergesortplot.svg"
 python3 task4.py "output/task4timsortresults.csv" "output/task4timsortresults.svg"
 
