@@ -5,6 +5,7 @@ public class InsertionSort<T extends Comparable<T>> {
 	private InsertionSort() {
 	}
 
+	// HIGH INCLUSIVE
 	public static <T extends Comparable<T>> int sort(T[] source, int low, int high, int offset) {
 		// Preconditions
 		assert high >= low;
@@ -33,6 +34,7 @@ public class InsertionSort<T extends Comparable<T>> {
 					break;
 				}
 			}
+			comparisons++;
 			source[j + 1] = temp;
 		}
 

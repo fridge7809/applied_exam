@@ -22,7 +22,7 @@ public class Timsort<T extends Comparable<T>> {
 	@SuppressWarnings("unchecked")
 	private Timsort(Class<?> clazz, T[] source, int cutoff, MergeRule mergeRule, boolean isAdaptive) {
 		int length = source.length;
-		int stackLength = 1000;
+		int stackLength = 100_000;
 		this.cutoff = cutoff;
 		this.source = source;
 		this.buffer = (T[]) Array.newInstance(clazz, length);
@@ -59,13 +59,13 @@ public class Timsort<T extends Comparable<T>> {
 		while (elementsLeft > 0) {
 			int runLength = ts.extendRun(source, low, high);
 			ts.pushRun(low, runLength);
-			ts.mergeWithRule(mergeRule);
+			ts.comparisons += ts.mergeWithRule(mergeRule);
 			low += runLength;
 			elementsLeft -= runLength;
 		}
 
 		assert low == high;
-		ts.forceMerge();
+		ts.comparisons += ts.forceMerge();
 		assert ts.stackSize == 1;
 		return ts.comparisons;
 	}
@@ -108,8 +108,11 @@ public class Timsort<T extends Comparable<T>> {
 
 	public static void main(String[] args) {
 		Integer[] input = {1, 2, 3, 4};
+		Integer[] input2 = {1, -1, 2, -2};
 		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.BINOMIALSORT, true);
+		int comps2 = Timsort.sort(input2, 0, input.length, 2, MergeRule.BINOMIALSORT, true);
 		System.out.println(comps);
+		System.out.println(comps2);
 	}
 
 	public static <T extends Comparable<T>> int sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
@@ -126,22 +129,27 @@ public class Timsort<T extends Comparable<T>> {
 			return 1;
 		}
 
-		boolean runIsDescending = less(source[runHigh++], source[low]);
-		comparisons++;
-		if (runIsDescending) {
-			// strictly decreasing
-			while (runHigh < high && less(source[runHigh], source[runHigh - 1])) {
+		if (this.isAdaptive) {
+			comparisons++;
+			boolean runIsDescending = less(source[runHigh++], source[low]);
+			if (runIsDescending) {
+				// strictly decreasing
+				while (runHigh < high && less(source[runHigh], source[runHigh - 1])) {
+					comparisons++;
+					runHigh++;
+				}
 				comparisons++;
-				runHigh++;
-			}
-			reverseRangeInPlace(source, low, runHigh);
-		} else {
-			// weakly increasing
-			while (runHigh < high && !less(source[runHigh], source[runHigh - 1])) {
+				reverseRangeInPlace(source, low, runHigh);
+			} else {
+				// weakly increasing
+				while (runHigh < high && !less(source[runHigh], source[runHigh - 1])) {
+					comparisons++;
+					runHigh++;
+				}
 				comparisons++;
-				runHigh++;
 			}
 		}
+
 
 		int localRunLength = runHigh - low;
 
@@ -170,60 +178,69 @@ public class Timsort<T extends Comparable<T>> {
 		stackSize++;
 	}
 
-	private void mergeWithRule(MergeRule mergeRule) {
+	private int mergeWithRule(MergeRule mergeRule) {
+		int comps = 0;
 		switch (mergeRule) {
-			case LENGTHTWO -> mergeLengthTwo();
-			case LEVELSORT -> mergeLevelSort();
-			case BINOMIALSORT -> mergeBinomialSort();
+			case LENGTHTWO -> comps = mergeLengthTwo();
+			case LEVELSORT -> comps = mergeLevelSort();
+			case BINOMIALSORT -> comps = mergeBinomialSort();
 			case null, default -> {
 				throw new IllegalStateException("Unexpected value: " + mergeRule);
 			}
 		}
+		return comps;
 	}
 
-	private void mergeBinomialSort() {
+	private int mergeBinomialSort() {
+		int comps = 0;
 		while (stackSize > 1) {
 			int newRun = stackSize - 1;
 			while (stackSize > 2 && (runLength[newRun - 1] < runLength[newRun])) {
-				mergeAt(newRun - 2);
+				comps += mergeAt(newRun - 2);
 			}
 			if (runLength[newRun - 1] < 2 * runLength[newRun]) {
-				mergeAt(newRun - 1);
+				comps += mergeAt(newRun - 1);
 			} else {
 				break;
 			}
 		}
+		return comps;
 	}
 
-	private void mergeLevelSort() {
+	private int mergeLevelSort() {
+		int comps = 0;
 		while (stackSize > 1) {
 			int newRun = stackSize - 1;
 			int localLevel = computeLevel(newRun - 1);
 			if (topLevel < localLevel) {
-				mergeAt(newRun - 1);
+				comps += mergeAt(newRun - 1);
 				topLevel = localLevel;
 			} else {
 				break;
 			}
 		}
+		return comps;
 	}
 
-	private void mergeLengthTwo() {
+	private int mergeLengthTwo() {
+		int comps = 0;
 		while (stackSize > 1) {
 			int n = stackSize - 1;
 			if (runLength[n] == runLength[n - 1]) {
-				mergeAt(n - 1);
+				comps += mergeAt(n - 1);
 			} else {
 				break;
 			}
 		}
+		return comps;
 	}
 
-	private void forceMerge() {
+	private int forceMerge() {
+		int comps = 0;
 		if (this.mergeRule.equals(MergeRule.LEVELSORT) || this.mergeRule.equals(MergeRule.BINOMIALSORT)) {
 			while (stackSize > 1) {
 				int n = stackSize - 1;
-				mergeAt(n - 1);
+				comps += mergeAt(n - 1);
 			}
 		}
 		if (this.mergeRule.equals(MergeRule.LENGTHTWO)) {
@@ -232,12 +249,13 @@ public class Timsort<T extends Comparable<T>> {
 				if (n > 0 && n + 1 < stackSize && runLength[n - 1] < runLength[n + 1]) {
 					n--;
 				}
-				mergeAt(n);
+				comps += mergeAt(n);
 			}
 		}
+		return comps;
 	}
 
-	private void mergeAt(int i) {
+	private int mergeAt(int i) {
 		int firstRunStart = runStart[i];
 		int firstRunLength = runLength[i];
 		int secondRunStart = runStart[i + 1];
@@ -251,7 +269,7 @@ public class Timsort<T extends Comparable<T>> {
 
 		stackSize--;
 
-		mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1, this.buffer);
+		return mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1, this.buffer);
 	}
 
 	private int computeLevel(int i) {

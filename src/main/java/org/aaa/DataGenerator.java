@@ -1,5 +1,6 @@
 package org.aaa;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
@@ -26,6 +27,26 @@ public class DataGenerator {
 					array[i] = i;
 				}
 				Arrays.sort(array, Collections.reverseOrder());
+			}
+			case ADAPTIVE -> {
+				ArrayList<Integer> elements = new ArrayList<>();
+				for (int i = 1; i < n / 2; i++) {
+					elements.add(i);
+				}
+				for (int i = n / 2; i > 0; i--) {
+					elements.add(i);
+				}
+
+				int r = 100;
+				int elementsPerRun = n / r;
+
+				for (int i = 0; i < r; i++) {
+					for (int j = elementsPerRun * i; j < (elementsPerRun * (i + 1)) - 1; j++) {
+						elements.set(j, (int) Math.pow(-1, i) * elements.get(j));
+					}
+				}
+				Integer[] res = elements.toArray(new Integer[0]);
+				return res;
 			}
 		}
 		return array;
@@ -69,7 +90,8 @@ public class DataGenerator {
 	public enum Distribution {
 		UNIFORM,
 		ASCENDING,
-		DESCENDING
+		DESCENDING,
+		ADAPTIVE
 	}
 
 	public enum StringContent {

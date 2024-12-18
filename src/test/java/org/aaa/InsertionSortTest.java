@@ -19,12 +19,27 @@ class InsertionSortTest {
 		assertThat(comparisonsOne).isEqualTo(18);
 	}
 
+	@Example
+	void shouldReturnCorrectNumberOfComparisonsWithOffset() {
+		Integer[] actualOne = {1, 2, 3, 4, 9, 1, 8};
+		int comparisonsOne = InsertionSort.sort(actualOne, 0, actualOne.length, 4);
+		assertThat(comparisonsOne).isEqualTo(8);
+	}
+
+	@Property
+	void insertionSort_shouldContainAllElementsForAnAlreadySortedSubarray(@ForAll("partiallySortedIntArrayProvider") @NotEmpty @WithNull(value = 0) Integer[] arr) {
+		int offset = arr.length / 2;
+		Integer[] original = Arrays.copyOf(arr, arr.length);
+		InsertionSort.sort(arr, 0, arr.length, offset);
+		assertThat(arr).containsAll(Arrays.asList(original));
+	}
+
 	@Property
 	void insertionSort_shouldBeSortedForAnAlreadySortedSubarray(@ForAll("partiallySortedIntArrayProvider") @NotEmpty @WithNull(value = 0) Integer[] arr) {
 		int offset = arr.length / 2;
 		Integer[] original = Arrays.copyOf(arr, arr.length);
-		InsertionSort.sort(arr, 0, arr.length - 1, offset);
-		assertThat(arr).containsAll(Arrays.asList(original));
+		InsertionSort.sort(arr, 0, arr.length, offset);
+		assertThat(arr).isSorted();
 	}
 
 	@Property

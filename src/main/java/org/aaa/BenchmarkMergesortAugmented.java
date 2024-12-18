@@ -16,7 +16,7 @@ import static org.aaa.DataGenerator.generateDataOfType;
 public class BenchmarkMergesortAugmented {
 
 	static StringBuilder builder = new StringBuilder();
-	static int WARMUPS = 1;
+	static int WARMUPS = 20;
 
 	public static void main(String[] args) {
 		if (args.length != 3) {
@@ -46,7 +46,6 @@ public class BenchmarkMergesortAugmented {
 					} else if (((cutoff & (cutoff - 1)) == 0)) { // powers of two
 						benchmark(InputType.INTS.name(), ni, iterations, () -> MergeSort.sort(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni), cutoff, true), cutoff);
 					}
-
 
 				System.out.println("task 4 progress:    completed benchmark for algorithm: " + algorithm + ", iterations: " + iterations + " " + "threshold: " + cutoff);
 			}

@@ -31,10 +31,12 @@ echo "Build and test OK"
 
 ####### TASK 4 && TASK 7 ###########
 # <algorithmname> <iterations> <parameter_C_upper_bound>
-java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented timsort "50" "80"
-java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented mergesort "50" "80"
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented timsort "100" "60"
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented mergesort "100" "60"
 
-# python3 task2.py "output/task2results.csv" "output/task2_plot.png"
+####### TASK 9 ###########
+# inputsize iterations exponentUpperBound
+java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkAdaptiveness "65536" "5" "15"
 
 ## DEPRECATED - for plotting data types separately
 #python3 task2.py "output/task2results.csv" "INTS" "output/task2_ints_plot.svg"
