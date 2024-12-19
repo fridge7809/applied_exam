@@ -165,7 +165,6 @@ public class Timsort<T extends Comparable<T>> {
 	}
 
 	private void pushRun(int runStart, int runLength) {
-		System.out.println("PUSHRUN: runStart: " + runStart + " length: " + runLength);
 		this.runStart[stackSize] = runStart;
 		this.runLength[stackSize] = runLength;
 		longestRunFound = Math.max(longestRunFound, runLength);
@@ -204,17 +203,18 @@ public class Timsort<T extends Comparable<T>> {
 	private int mergeLevelSort() {
 		int comps = 0;
 
+		int levelOfRunA = 0;
+		int levelOfRunB = 0;
+
+		// compute boundary levels of two runs, when we have three runs available
 		while (stackSize > 2) {
-			System.out.println(stackSize);
 			int runA = stackSize - 2;
 			int runB = stackSize - 1;
 
-			int levelOfRunA = computeLevel(runA);
-			int levelOfRunB = computeLevel(runB);
+			levelOfRunA = computeLevel(runA);
+			levelOfRunB = computeLevel(runB);
 
-			System.out.println("Level of run a: " + levelOfRunA + " b: " + levelOfRunB);
 			if (levelOfRunA < levelOfRunB) {
-				System.out.println("MERGING at: " + runA);
 				comps += mergeAt(runA-1);
 				topLevel = levelOfRunB;
 			} else {
@@ -222,9 +222,16 @@ public class Timsort<T extends Comparable<T>> {
 			}
 		}
 
-		// while (stackSize > 1) {
+		// when stack is only 2 elements we check whether the level of these demand a merge, else break and add new runs
+		while (stackSize == 2) {
+			if(levelOfRunA<levelOfRunB) {
+				comps += mergeAt(stackSize - 2);
+				topLevel = levelOfRunB;
+			} else {
+				break;
+			}
 
-		// }
+		}
 
 		return comps;
 	}
@@ -276,9 +283,6 @@ public class Timsort<T extends Comparable<T>> {
 
 		stackSize--;
 
-		// fixing levelsort test
-		//runStart[secondRunStart] = firstRunLength + secondRunLength;
-
 		return mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1,
 				this.buffer);
 	}
@@ -287,25 +291,14 @@ public class Timsort<T extends Comparable<T>> {
 		assert i >= 0;
 		long ia = runStart[i - 1];
 		long ib = runStart[i];
-		long ic = ib + runLength[i] - 1;
+		long ic = ib + runLength[i];
 		long ml = (ia + ib) / 2;
 		long mr = (ib + ic) / 2;
-		// CORRECT CALC!
-		System.out.println("ia,ib,ic: " + ia + "," + ib + "," + ic +" " + ml + " " + mr + "  lvl: " + (64 - Long.numberOfLeadingZeros(ml ^ mr)));
 		return 64 - Long.numberOfLeadingZeros(ml ^ mr);
 	}
 
 	public static void main(String[] args) {
 		Integer[] input = { 1, 2, 0, 1, 0, 4, 3, 4, 2, 3 };
-		long mltest = 11;
-		long mrtest = 12;
-		long mltest2 = 9;
-		long mrtest2 = 10;
-		System.out.println("lvlllll" + (64 - Long.numberOfLeadingZeros(mltest2 ^ mrtest2)));
-
-		System.out.println("lvlllll" + (64 - Long.numberOfLeadingZeros(mltest ^ mrtest)));
 		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.LEVELSORT, false);
-		System.out.println(comps);
-		System.out.println(Arrays.toString(input));
 	}
 }
