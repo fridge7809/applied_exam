@@ -5,7 +5,7 @@ public class InsertionSort<T extends Comparable<T>> {
 	private InsertionSort() {
 	}
 
-	// HIGH INCLUSIVE
+	// Insertion sort with an offset. Offset specifies that elements up untill offset is already sorted
 	public static <T extends Comparable<T>> int sort(T[] source, int low, int high, int offset) {
 		// Preconditions
 		assert high >= low;
@@ -41,6 +41,7 @@ public class InsertionSort<T extends Comparable<T>> {
 		return comparisons;
 	}
 
+	// Normal InsertionSort
 	public static <T extends Comparable<T>> int sort(T[] source, int left, int right) {
 		assert left <= right;
 		int comparisons = 0;

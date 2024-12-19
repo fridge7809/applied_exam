@@ -40,4 +40,4 @@ plt.legend()
 plt.grid(axis='y', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 
-plt.show()
+plt.savefig("output/task10results.svg")

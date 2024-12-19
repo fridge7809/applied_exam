@@ -5,6 +5,7 @@ public class TwoSequenceSelect {
     public static <T extends Comparable<T>> int[] find(T[] a, T[] b, int k) {
         assert k <= a.length + b.length;
         assert k >= 0;
+        // The two sequences should be sorted
         assert isSorted(a);
         assert isSorted(b);
 
@@ -48,18 +49,4 @@ public class TwoSequenceSelect {
         return true;
     }
 
-    public static void main(String[] args) {
-        // int[] a = { 1, 3, 5, 7 };
-        // int[] b = { 2, 4, 5 };
-        // int k = 5;
-
-        int k = 2;
-        Integer[] source = { 1, 5, 2, 4 };
-        Integer[] source2 = { 1, 4, 5, 3, 4 };
-
-        // int[] result = find(source2, 0, 2, 4, k);
-        // System.out.println("ia: " + result[0] + ", ib: " + result[1]);
-        // for (int i : result)
-        // System.out.println(i);
-    }
 }

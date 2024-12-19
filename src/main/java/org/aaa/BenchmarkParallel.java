@@ -22,10 +22,9 @@ public class BenchmarkParallel {
 
 	public static void main(String[] args) {
 		if (args.length != 3) {
-			throw new IllegalArgumentException("Usage: java BenchmarkParallel <inputsizeCommaSeperated> <iterations> <parallelCutOffRange> \n example java BenchmarkParallel 100000 15 1,100");
+			throw new IllegalArgumentException("Missing arguments - Use: java BenchmarkParallel <inputsizeCommaSeperated> <iterations> <parallelCutOffRange> \n example java BenchmarkParallel 100000 15 1,100");
 		}
 
-		// 65536 5 13
 		String[] sizes = args[0].split(",");
 
 		double[] inputSizes = new double[sizes.length];
@@ -38,7 +37,6 @@ public class BenchmarkParallel {
 		for (int i = 0; i < tokens.length; i++) {
 			cutoffRange[i] = Integer.parseInt(tokens[i]);
 		}
-
 
 		int iterations = Integer.parseInt(args[1]);
 

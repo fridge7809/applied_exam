@@ -16,7 +16,6 @@ public class Timsort<T extends Comparable<T>> {
 	private final int cutoff;
 	private int comparisons;
 	private int stackSize = 0;
-	private int topLevel;
 
 	@SuppressWarnings("unchecked")
 	private Timsort(Class<?> clazz, T[] source, int cutoff, MergeRule mergeRule, boolean isAdaptive) {
@@ -27,7 +26,6 @@ public class Timsort<T extends Comparable<T>> {
 		this.buffer = (T[]) Array.newInstance(clazz, length);
 		this.mergeRule = mergeRule;
 		this.isAdaptive = isAdaptive;
-		this.topLevel = Integer.MIN_VALUE;
 		this.comparisons = 0;
 		runStart = new int[stackLength];
 		runLength = new int[stackLength];
@@ -66,11 +64,14 @@ public class Timsort<T extends Comparable<T>> {
 		}
 
 		assert low == high;
+		// We "force" merging when we are done merging with the applied mergerule.
+		// This ensures that algoruthms always merge all runs, specially in EqualLength algorithm that does not merge runs if they are not equal length
 		ts.comparisons += ts.forceMerge();
 		assert ts.stackSize == 1;
 		return ts.comparisons;
 	}
 
+	// Strictly decreasing runs can be reversed in place and still maintain stability
 	private static <T extends Comparable<T>> void reverseRangeInPlace(T[] source, int low, int high) {
 		assert low < high;
 
@@ -115,6 +116,8 @@ public class Timsort<T extends Comparable<T>> {
 		return sort(array, 0, array.length, cutoff, mergeRule, isAdaptive);
 	}
 
+	// When adaptive, we can find longer runs than C by extending the run. 
+	// If not adaptive, or run is shorter than C, InsertionSort till we have run of length C
 	private <T extends Comparable<T>> int extendRun(T[] source, int low, int high) {
 		assert low < high;
 		int runHigh = low + 1;
@@ -163,6 +166,7 @@ public class Timsort<T extends Comparable<T>> {
 
 	}
 
+	// Add run to stack
 	private void pushRun(int runStart, int runLength) {
 		this.runStart[stackSize] = runStart;
 		this.runLength[stackSize] = runLength;
@@ -170,6 +174,7 @@ public class Timsort<T extends Comparable<T>> {
 		stackSize++;
 	}
 
+	// Merge runs with specified mergerule
 	private int mergeWithRule(MergeRule mergeRule) {
 		int comps = 0;
 		switch (mergeRule) {
@@ -209,13 +214,11 @@ public class Timsort<T extends Comparable<T>> {
 		while (stackSize > 2) {
 			int runA = stackSize - 2;
 			int runB = stackSize - 1;
-
 			levelOfRunA = computeLevel(runA);
 			levelOfRunB = computeLevel(runB);
 
 			if (levelOfRunA < levelOfRunB) {
 				comps += mergeAt(runA-1);
-				topLevel = levelOfRunB;
 			} else {
 				break;
 			}
@@ -223,15 +226,12 @@ public class Timsort<T extends Comparable<T>> {
 
 		// when stack is only 2 elements we check whether the level of these demand a merge, else break and add new runs
 		while (stackSize == 2) {
-			if(levelOfRunA<levelOfRunB) {
+			if(levelOfRunA < levelOfRunB) {
 				comps += mergeAt(stackSize - 2);
-				topLevel = levelOfRunB;
 			} else {
 				break;
 			}
-
 		}
-
 		return comps;
 	}
 
@@ -286,6 +286,7 @@ public class Timsort<T extends Comparable<T>> {
 				this.buffer);
 	}
 
+	// LevelSort level computation
 	private int computeLevel(int i) {
 		assert i >= 0;
 		long ia = runStart[i - 1];

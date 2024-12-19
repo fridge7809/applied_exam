@@ -24,11 +24,11 @@ def read_csv(filename):
 def plot_data(data):
     conditions = [
         {"isadaptive": True, "inputdistribution": "UNIFORM"},
-        {"isadaptive": True, "inputdistribution": "ADAPTIVE"},
+        {"isadaptive": True, "inputdistribution": "PRESORTED"},
     ]
     titles = [
         "Adaptive, Uniform Distribution",
-        "Adaptive, Adaptive Distribution",
+        "Adaptive, Presorted Distribution",
     ]
 
     fig, axs = plt.subplots(1, 2, figsize=(15, 5), sharex=True, sharey=True)
@@ -62,8 +62,7 @@ def plot_data(data):
         axs[i].set_xticklabels([f'$2^{{{int(np.log2(t))}}}$' for t in xticks])
 
     plt.tight_layout()
-    plt.show()
-
+    plt.savefig("output/task9results.svg")
 
 if __name__ == "__main__":
     filename = "./output/task9results.csv"

@@ -43,7 +43,7 @@ public class HorseRace {
 
 			List<Comparable[]> stairCase = new ArrayList<>();
 			for (int i = 0; i < iterations; i++) {
-				stairCase.add(generateDataOfType(InputType.INTS, Distribution.ADAPTIVE, VARIED_LENGTH, ni, runs));
+				stairCase.add(generateDataOfType(InputType.INTS, Distribution.PRESORTED, VARIED_LENGTH, ni, runs));
 			}
 
 			int cutoff = 16;

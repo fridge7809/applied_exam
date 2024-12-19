@@ -6,6 +6,7 @@ public class DataGenerator {
 
 	private static final Random RANDOM = new Random(1000);
 
+	// Generates data for benchmarking
 	private static Integer[] generateIntegerArray(int n, Distribution distribution, int r) {
 		Integer[] array = new Integer[n];
 		switch (distribution) {
@@ -25,7 +26,8 @@ public class DataGenerator {
 				}
 				Arrays.sort(array, Collections.reverseOrder());
 			}
-			case ADAPTIVE -> {
+			case PRESORTED -> {
+				// ""
 				List<Integer> list = new ArrayList<>();
 				int elementsPerRun = n / r;
 
@@ -88,7 +90,7 @@ public class DataGenerator {
 		UNIFORM,
 		ASCENDING,
 		DESCENDING,
-		ADAPTIVE
+		PRESORTED
 	}
 
 	public enum StringContent {
@@ -101,7 +103,7 @@ public class DataGenerator {
 		int N = 1000; // Total number of elements
 		int R = 3;  // Number of runs
 
-		Integer[] array = generateIntegerArray(N, Distribution.ADAPTIVE, R);
+		Integer[] array = generateIntegerArray(N, Distribution.PRESORTED, R);
 
 		// Print the resulting array
 		System.out.println(Arrays.toString(array));

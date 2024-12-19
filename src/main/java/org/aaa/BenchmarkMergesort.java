@@ -15,7 +15,7 @@ public class BenchmarkMergesort {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
-			throw new IllegalArgumentException("Usage: java BenchmarkMergesort <10,100,1000...N> <iterations> " +
+			throw new IllegalArgumentException("Missing arguments - Use: java BenchmarkMergesort <10,100,1000...N> <iterations> " +
 					"\n example: java BenchmarkMergesort 100,200,300 10");
 		}
 		String[] tokens = args[0].split(",");

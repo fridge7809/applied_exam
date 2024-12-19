@@ -26,7 +26,6 @@ public class BenchmarkAdaptiveness {
 			throw new IllegalArgumentException("Usage: java BenchmarkAdaptiveness <inputsize> <iterations> <exponentUpperBound> \n example java BenchmarkAdaptiveness 100000 5 15");
 		}
 
-		// 65536 5 13
 		double inputSize = Double.parseDouble(args[0]);
 		double[] inputSizes = new double[]{inputSize};
 		int exponent = Integer.parseInt(args[2]);
@@ -43,7 +42,7 @@ public class BenchmarkAdaptiveness {
 			int ni = (int) n;
 			List<Comparable[]> adaptive = new ArrayList<>();
 			for (int i = 0; i < iterations; i++) {
-				adaptive.add(generateDataOfType(InputType.INTS, Distribution.ADAPTIVE, VARIED_LENGTH, ni, 25));
+				adaptive.add(generateDataOfType(InputType.INTS, Distribution.PRESORTED, VARIED_LENGTH, ni, 25));
 			}
 			List<Comparable[]> uniform = new ArrayList<>();
 			for (int i = 0; i < iterations; i++) {
@@ -53,7 +52,7 @@ public class BenchmarkAdaptiveness {
 			for (int cutoff : range) {
 				for (MergeRule rule : Arrays.stream(MergeRule.values()).filter(rule -> !rule.equals(MergeRule.EQUALLENGTH)).collect(Collectors.toSet())) {
 					benchmark(iterations, rule, true, Distribution.UNIFORM, cutoff, ni, uniform, (currentData) -> Timsort.sort(currentData, rule, true, cutoff));
-					benchmark(iterations, rule, true, Distribution.ADAPTIVE, cutoff, ni, adaptive, (currentData) -> Timsort.sort(currentData, rule, true, cutoff));
+					benchmark(iterations, rule, true, Distribution.PRESORTED, cutoff, ni, adaptive, (currentData) -> Timsort.sort(currentData, rule, true, cutoff));
 				}
 				System.out.println("task 9 progress:    N: " + ni + "   iterations: " + iterations + "  paramter c: " + cutoff);
 			}

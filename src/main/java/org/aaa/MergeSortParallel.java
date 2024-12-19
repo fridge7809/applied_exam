@@ -93,7 +93,6 @@ public class MergeSortParallel {
         int n = getN(low, high);
         int chunkSize = getChunkSize(n, parts);
 
-
         List<Callable<Integer>> tasks = new ArrayList<>();
         T[] leftSubarray = Arrays.copyOfRange(source, low, mid + 1);
         T[] rightSubarray = Arrays.copyOfRange(source, mid + 1, high + 1);
@@ -111,6 +110,8 @@ public class MergeSortParallel {
             final int start = task * chunkSize;
             final int end = Math.min(n - 1, start + chunkSize - 1);
             final int middle = (end + start) / 2;
+            
+            // One task that populates the first half of the output array
             tasks.add(() -> {
                 int comparisons = 0;
                 for (int i = start; i < middle; i++) {
@@ -122,6 +123,7 @@ public class MergeSortParallel {
                 return comparisons;
             });
 
+            // Second task that populates second half of the output array
             tasks.add(() -> {
                 int comparisons = 0;
                 for (int i = middle; i < end; i++) {
@@ -147,7 +149,6 @@ public class MergeSortParallel {
             } catch (InterruptedException | ExecutionException | AssertionError a) {
                 a.printStackTrace();
             }
-        System.out.println(count + " Futures count");
 
         System.arraycopy(buffer, low, source, low, n);
         return totalComparisons;
@@ -196,10 +197,4 @@ public class MergeSortParallel {
         return Math.max(1, source.length / threadCount);
     }
 
-    public static void main(String[] args) {
-        Integer[] arr = new Integer[] {1,2,3,4,5,6,7,8, 9, 10, 11, 12, 13, 14, 15, 16};
-        int threadCount = 4;
-        int comparisons = MergeSortParallel.sortParallelWithParallelMerge(arr, 0, threadCount);
-        System.out.println(Arrays.toString(arr));
-    }
 }

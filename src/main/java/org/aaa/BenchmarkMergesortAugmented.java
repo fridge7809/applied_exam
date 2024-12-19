@@ -20,7 +20,7 @@ public class BenchmarkMergesortAugmented {
 
 	public static void main(String[] args) {
 		if (args.length != 3) {
-			throw new IllegalArgumentException("Usage: java BenchmarkMergesortAugmented <algorithm> <iterations> <parameterUpperBound> \n example java BenchmarkMergesortAugmented timsort 200 40");
+			throw new IllegalArgumentException("Missing arguments - Use: java BenchmarkMergesortAugmented <algorithm> <iterations> <parameterUpperBound> \n example java BenchmarkMergesortAugmented timsort 200 40");
 		}
 		String algorithm = args[0];
 		if (!algorithm.equals("mergesort") && !algorithm.equals("timsort")) {

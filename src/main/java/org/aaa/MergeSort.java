@@ -5,8 +5,6 @@ import static org.aaa.Utils.less;
 
 public class MergeSort<T extends Comparable<T>> {
 
-	private static final int DEFAULT_INSERTION_SORT_THRESHOLD = 14;
-
 	private static <T extends Comparable<T>> int merge(T[] source, T[] buffer, int low, int mid, int high) {
 		// Precondition, merge operation expects sorted subarrays.
 		assert isSorted(source, low, mid);
@@ -36,18 +34,6 @@ public class MergeSort<T extends Comparable<T>> {
 		// Postcondition
 		assert isSorted(source, low, high);
 		return comparisons;
-	}
-
-	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high) {
-		if (high <= low) {
-			return 0; // Base case, array of one element is always sorted.
-		}
-
-		int mid = low + (high - low) / 2;
-		int left = sort(source, buffer, low, mid);
-		int right = sort(source, buffer, mid + 1, high);
-
-		return left + right + merge(source, buffer, low, mid, high);
 	}
 
 	private static <T extends Comparable<T>> int sort(T[] source, T[] buffer, int low, int high, int insertionThreshold) {

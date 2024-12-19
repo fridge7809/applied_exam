@@ -53,4 +53,4 @@ ax.legend(loc="upper left", fontsize=10)
 ax.grid(True, which="both", linestyle="--", linewidth=0.5)
 
 plt.tight_layout()
-plt.show()
+plt.savefig("output/task12results.svg")

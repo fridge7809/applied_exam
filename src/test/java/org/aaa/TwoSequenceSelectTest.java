@@ -158,6 +158,7 @@ public class TwoSequenceSelectTest {
         assertThat(valueAtKthPositionFromMergedArray).isEqualTo(actualValueAtKthPositionFromTwoSeq);
     }
 
+    // Testing that TwoSequenceSelect switch between returning 
     @Example
     void shouldFindRanksInterchangeably() {
         Pair[] a = new Pair[] {new Pair<>(1, 0), new Pair(3, 1), new Pair(5, 2)};

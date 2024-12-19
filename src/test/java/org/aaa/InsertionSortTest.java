@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Insertion sort property based and example based tests
 class InsertionSortTest {
 
 	@Example
