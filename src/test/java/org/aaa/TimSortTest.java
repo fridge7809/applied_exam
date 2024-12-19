@@ -64,7 +64,7 @@ class TimSortTest {
 	}
 
 	@Property
-	dis@Disabled("doesnt hold for level sort?")
+	@Disabled("doesnt hold for level sort?")
 	<T extends Comparable<T>> void shouldReturnNMinusOneComparisonsWhenAdaptiveForSortedInput(
 			@ForAll("mergeRuleProvider") MergeRule mergeRule,
 			@ForAll @IntRange(min = 1, max = 100) int cutoff,

@@ -1,7 +1,7 @@
 package org.aaa;
 
-
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 import static org.aaa.Utils.less;
 
@@ -34,11 +34,13 @@ public class Timsort<T extends Comparable<T>> {
 		runLength = new int[stackLength];
 	}
 
-	public static <T extends Comparable<T>> void sort(T[] source, int low, int high, MergeRule mergeRule, boolean isAdaptive) {
+	public static <T extends Comparable<T>> void sort(T[] source, int low, int high, MergeRule mergeRule,
+			boolean isAdaptive) {
 		sort(source, low, high, 32, mergeRule, isAdaptive);
 	}
 
-	public static <T extends Comparable<T>> int sort(T[] source, int low, int high, int cutoff, MergeRule mergeRule, boolean isAdaptive) {
+	public static <T extends Comparable<T>> int sort(T[] source, int low, int high, int cutoff, MergeRule mergeRule,
+			boolean isAdaptive) {
 		// Preconditions
 		if (source == null) {
 			throw new IllegalArgumentException("source is null");
@@ -106,11 +108,6 @@ public class Timsort<T extends Comparable<T>> {
 		return comparisons;
 	}
 
-	public static void main(String[] args) {
-		Integer[] input = {8, 3, 7, 6, 2, 5, 1, 4};
-		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.LEVELSORT, false);
-		System.out.println(comps);
-	}
 
 	public static <T extends Comparable<T>> int sort(T[] array, MergeRule mergeRule, boolean isAdaptive, int cutoff) {
 		if (cutoff < 1) {
@@ -147,7 +144,6 @@ public class Timsort<T extends Comparable<T>> {
 			}
 		}
 
-
 		int localRunLength = runHigh - low;
 
 		if (localRunLength >= cutoff) {
@@ -163,12 +159,13 @@ public class Timsort<T extends Comparable<T>> {
 		int cappedUpperBound = Math.min(high, low + cutoff);
 		// run insertionsort with run length as an offset
 		comparisons += InsertionSort.sort(source, low, cappedUpperBound, localRunLength);
-		int diff = high - low - 1;
+		int diff = high - low; // OBS REMOVED -1
 		return Math.min(diff, cutoff);
 
 	}
 
 	private void pushRun(int runStart, int runLength) {
+		System.out.println("PUSHRUN: runStart: " + runStart + " length: " + runLength);
 		this.runStart[stackSize] = runStart;
 		this.runLength[stackSize] = runLength;
 		longestRunFound = Math.max(longestRunFound, runLength);
@@ -206,17 +203,29 @@ public class Timsort<T extends Comparable<T>> {
 
 	private int mergeLevelSort() {
 		int comps = 0;
-		while (stackSize > 1) {
-			int newRun = stackSize - 1;
-			int localLevel = computeLevel(newRun);
-			if (localLevel > topLevel) {
-				System.out.println("MERGING");
-				comps += mergeAt(newRun - 1);
-				topLevel = localLevel;
+
+		while (stackSize > 2) {
+			System.out.println(stackSize);
+			int runA = stackSize - 2;
+			int runB = stackSize - 1;
+
+			int levelOfRunA = computeLevel(runA);
+			int levelOfRunB = computeLevel(runB);
+
+			System.out.println("Level of run a: " + levelOfRunA + " b: " + levelOfRunB);
+			if (levelOfRunA < levelOfRunB) {
+				System.out.println("MERGING at: " + runA);
+				comps += mergeAt(runA-1);
+				topLevel = levelOfRunB;
 			} else {
 				break;
 			}
 		}
+
+		// while (stackSize > 1) {
+
+		// }
+
 		return comps;
 	}
 
@@ -267,16 +276,36 @@ public class Timsort<T extends Comparable<T>> {
 
 		stackSize--;
 
-		return mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1, this.buffer);
+		// fixing levelsort test
+		//runStart[secondRunStart] = firstRunLength + secondRunLength;
+
+		return mergeRuns(this.source, firstRunStart, secondRunStart - 1, secondRunStart + secondRunLength - 1,
+				this.buffer);
 	}
 
 	private int computeLevel(int i) {
 		assert i >= 0;
 		long ia = runStart[i - 1];
 		long ib = runStart[i];
-		long ic = ib + runLength[i];
+		long ic = ib + runLength[i] - 1;
 		long ml = (ia + ib) / 2;
 		long mr = (ib + ic) / 2;
+		// CORRECT CALC!
+		System.out.println("ia,ib,ic: " + ia + "," + ib + "," + ic +" " + ml + " " + mr + "  lvl: " + (64 - Long.numberOfLeadingZeros(ml ^ mr)));
 		return 64 - Long.numberOfLeadingZeros(ml ^ mr);
+	}
+
+	public static void main(String[] args) {
+		Integer[] input = { 1, 2, 0, 1, 0, 4, 3, 4, 2, 3 };
+		long mltest = 11;
+		long mrtest = 12;
+		long mltest2 = 9;
+		long mrtest2 = 10;
+		System.out.println("lvlllll" + (64 - Long.numberOfLeadingZeros(mltest2 ^ mrtest2)));
+
+		System.out.println("lvlllll" + (64 - Long.numberOfLeadingZeros(mltest ^ mrtest)));
+		int comps = Timsort.sort(input, 0, input.length, 2, MergeRule.LEVELSORT, false);
+		System.out.println(comps);
+		System.out.println(Arrays.toString(input));
 	}
 }
