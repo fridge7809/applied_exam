@@ -38,9 +38,12 @@ java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkMergesortAugmented merge
 # inputsize iterations exponentUpperBound
 java -cp build/libs/applied_exam-1.jar org.aaa.BenchmarkAdaptiveness "65536" "5" "13"
 
+####### TASK 10 ###########
+# inputsizeCommaSeperated iterations
+java -cp build/libs/applied_exam-1.jar org.aaa.HorseRace "16384,32768,65536" "5"
+
 ## DEPRECATED - for plotting data types separately
-#python3 task2.py "output/task2results.csv" "INTS" "output/task2_ints_plot.svg"
-#python3 task2.py "output/task2results.csv" "STRINGS" "output/task2_strings_plot.svg"
+python3 task2.py "output/task2results.csv" "output/task2_plot.svg"
 
 python3 task4.py "output/task4mergesortresults.csv" "output/task4mergesortplot.svg"
 python3 task4.py "output/task4timsortresults.csv" "output/task4timsortresults.svg"

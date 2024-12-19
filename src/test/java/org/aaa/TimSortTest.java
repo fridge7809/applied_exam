@@ -30,14 +30,17 @@ class TimSortTest {
 				.isInstanceOf(ClassCastException.class);
 	}
 
-	@Property
-	@Disabled("inefficient")
+	@Example
+		// @Disabled("not efficient")
 	void shouldSortLargeArray(@ForAll("mergeRuleProvider") MergeRule mergeRule,
 	                          @ForAll boolean isAdaptive,
 	                          @ForAll @IntRange(min = 1, max = 100) int cutoff) {
-		int largeSize = 26_843_545; // approaching upper bound for -Xmx4G
+		int largeSize = 64_117_724; // approaching upper bound for 512 mb -Xmx
+		long heapMaxSize = Runtime.getRuntime().maxMemory();
+		System.out.println(heapMaxSize);
 		Byte[] input = new Byte[largeSize];
-		Timsort.sort(input, 0, input.length, MergeRule.BINOMIALSORT, isAdaptive);
+		Arrays.fill(input, (byte) 'a');
+		Timsort.sort(input, 0, input.length, MergeRule.EQUALLENGTH, isAdaptive);
 		assertThat(input).isSorted();
 	}
 

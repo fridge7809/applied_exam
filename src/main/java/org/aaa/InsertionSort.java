@@ -54,6 +54,7 @@ public class InsertionSort<T extends Comparable<T>> {
 				}
 			}
 		}
+		Utils.isSorted(source, left, right);
 		return comparisons;
 	}
 

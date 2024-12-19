@@ -42,9 +42,9 @@ public class BenchmarkMergesortAugmented {
 
 			for (int cutoff : range) {
 					if (algorithm.equals("timsort")) {
-						benchmark(InputType.INTS.name(), ni, iterations, () -> Timsort.sort(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni), MergeRule.LENGTHTWO, false, cutoff), cutoff);
+						benchmark(InputType.INTS.name(), ni, iterations, () -> Timsort.sort(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni, 25), MergeRule.EQUALLENGTH, false, cutoff), cutoff);
 					} else if (((cutoff & (cutoff - 1)) == 0)) { // powers of two
-						benchmark(InputType.INTS.name(), ni, iterations, () -> MergeSort.sort(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni), cutoff, true), cutoff);
+						benchmark(InputType.INTS.name(), ni, iterations, () -> MergeSort.sort(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni, 25), cutoff, true), cutoff);
 					}
 
 				System.out.println("task 4 progress:    completed benchmark for algorithm: " + algorithm + ", iterations: " + iterations + " " + "threshold: " + cutoff);

@@ -1,7 +1,6 @@
 package org.aaa;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
 
 import static org.aaa.Utils.less;
 
@@ -159,7 +158,7 @@ public class Timsort<T extends Comparable<T>> {
 		int cappedUpperBound = Math.min(high, low + cutoff);
 		// run insertionsort with run length as an offset
 		comparisons += InsertionSort.sort(source, low, cappedUpperBound, localRunLength);
-		int diff = high - low; // OBS REMOVED -1
+		int diff = high - low;
 		return Math.min(diff, cutoff);
 
 	}
@@ -174,7 +173,7 @@ public class Timsort<T extends Comparable<T>> {
 	private int mergeWithRule(MergeRule mergeRule) {
 		int comps = 0;
 		switch (mergeRule) {
-			case LENGTHTWO -> comps = mergeLengthTwo();
+			case EQUALLENGTH -> comps = mergeLengthTwo();
 			case LEVELSORT -> comps = mergeLevelSort();
 			case BINOMIALSORT -> comps = mergeBinomialSort();
 			case null, default -> {
@@ -257,7 +256,7 @@ public class Timsort<T extends Comparable<T>> {
 				comps += mergeAt(n - 1);
 			}
 		}
-		if (this.mergeRule.equals(MergeRule.LENGTHTWO)) {
+		if (this.mergeRule.equals(MergeRule.EQUALLENGTH)) {
 			while (stackSize > 1) {
 				int n = stackSize - 2;
 				if (n > 0 && n + 1 < stackSize && runLength[n - 1] < runLength[n + 1]) {

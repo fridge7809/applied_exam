@@ -24,29 +24,28 @@ def read_csv(filename):
 def plot_data(data):
     conditions = [
         {"isadaptive": True, "inputdistribution": "UNIFORM"},
-        {"isadaptive": False, "inputdistribution": "ADAPTIVE"},
-        {"isadaptive": False, "inputdistribution": "UNIFORM"},
-        {"isadaptive": True, "inputdistribution": "ADAPTIVE"}
+        {"isadaptive": True, "inputdistribution": "ADAPTIVE"},
     ]
-
     titles = [
         "Adaptive, Uniform Distribution",
-        "Non-Adaptive, Adaptive Distribution",
-        "Non-Adaptive, Uniform Distribution",
-        "Adaptive, Adaptive Distribution"
+        "Adaptive, Adaptive Distribution",
     ]
 
-    fig, axs = plt.subplots(2, 2, figsize=(15, 10), sharex=True, sharey=True)
+    fig, axs = plt.subplots(1, 2, figsize=(15, 5), sharex=True, sharey=True)
     axs = axs.flatten()
 
     for i, condition in enumerate(conditions):
         subset = [d for d in data if
-                  d["isadaptive"] == condition["isadaptive"] and d[
-                      "inputdistribution"] == condition["inputdistribution"]]
+                  d["isadaptive"] == condition["isadaptive"] and
+                  d["inputdistribution"] == condition["inputdistribution"]]
+
+        if not subset:
+            continue
 
         axs[i].set_title(titles[i])
         axs[i].set_xlabel("c value (log scale)")
         axs[i].set_ylabel("Time (s)")
+
         for rule in set(d["mergerule"] for d in subset):
             rule_subset = [d for d in subset if d["mergerule"] == rule]
             x = [d["c"] for d in rule_subset]

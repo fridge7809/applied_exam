@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.aaa.DataGenerator.StringContent.VARIED_LENGTH;
@@ -18,7 +19,7 @@ import static org.aaa.DataGenerator.generateDataOfType;
 public class BenchmarkAdaptiveness {
 
 	static StringBuilder builder = new StringBuilder();
-	static int WARMUPS = 1;
+	static int WARMUPS = 2;
 
 	public static void main(String[] args) {
 		if (args.length != 3) {
@@ -42,60 +43,19 @@ public class BenchmarkAdaptiveness {
 			int ni = (int) n;
 			List<Comparable[]> adaptive = new ArrayList<>();
 			for (int i = 0; i < iterations; i++) {
-				adaptive.add(generateDataOfType(InputType.INTS, Distribution.ADAPTIVE, VARIED_LENGTH, ni));
+				adaptive.add(generateDataOfType(InputType.INTS, Distribution.ADAPTIVE, VARIED_LENGTH, ni, 25));
 			}
 			List<Comparable[]> uniform = new ArrayList<>();
 			for (int i = 0; i < iterations; i++) {
-				uniform.add(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni));
+				uniform.add(generateDataOfType(InputType.INTS, Distribution.UNIFORM, VARIED_LENGTH, ni, 25));
 			}
 
 			for (int cutoff : range) {
-				for (MergeRule rule : MergeRule.values()) {
-					benchmark(
-							iterations,
-							rule,
-							false,
-							Distribution.UNIFORM,
-							cutoff,
-							ni,
-							adaptive,
-							(currentData) -> Timsort.sort(currentData, rule, false, cutoff)
-					);
-
-					benchmark(
-							iterations,
-							rule,
-							true,
-							Distribution.UNIFORM,
-							cutoff,
-							ni,
-							uniform,
-							(currentData) -> Timsort.sort(currentData, rule, true, cutoff)
-					);
-
-					benchmark(
-							iterations,
-							rule,
-							true,
-							Distribution.ADAPTIVE,
-							cutoff,
-							ni,
-							adaptive,
-							(currentData) -> Timsort.sort(currentData, rule, true, cutoff)
-					);
-
-					benchmark(
-							iterations,
-							rule,
-							false,
-							Distribution.ADAPTIVE,
-							cutoff,
-							ni,
-							uniform,
-							(currentData) -> Timsort.sort(currentData, rule, false, cutoff)
-					);
+				for (MergeRule rule : Arrays.stream(MergeRule.values()).filter(rule -> !rule.equals(MergeRule.EQUALLENGTH)).collect(Collectors.toSet())) {
+					benchmark(iterations, rule, true, Distribution.UNIFORM, cutoff, ni, uniform, (currentData) -> Timsort.sort(currentData, rule, true, cutoff));
+					benchmark(iterations, rule, true, Distribution.ADAPTIVE, cutoff, ni, adaptive, (currentData) -> Timsort.sort(currentData, rule, true, cutoff));
 				}
-				System.out.println("task 9 progress:    completed benchmark for algorithm: " + ", iterations: " + iterations + " " + "threshold: " + cutoff);
+				System.out.println("task 9 progress:    N: " + ni + "   iterations: " + iterations + "  paramter c: " + cutoff);
 			}
 		}
 

@@ -34,11 +34,11 @@ public class BenchmarkMergesort {
 
 			// the parameters for generatedataoftype are misleading, beware
 			for (Distribution distribution : Distribution.values()) {
-				benchmark(InputType.INTS.name() + "_" + distribution, n, iterations, () -> MergeSort.sort(generateDataOfType(InputType.INTS, distribution, StringContent.FIXED_LENGTH, n)));
+				benchmark(InputType.INTS.name() + "_" + distribution, n, iterations, () -> MergeSort.sort(generateDataOfType(InputType.INTS, distribution, StringContent.FIXED_LENGTH, n, 25)));
 			}
 
 			for (StringContent content : StringContent.values()) {
-				benchmark(InputType.STRINGS.name() + "_" + content, n, iterations, () -> MergeSort.sort(generateDataOfType(InputType.STRINGS, Distribution.ASCENDING, content, n)));
+				benchmark(InputType.STRINGS.name() + "_" + content, n, iterations, () -> MergeSort.sort(generateDataOfType(InputType.STRINGS, Distribution.ASCENDING, content, n, 25)));
 			}
 
 			System.out.println("task 2 progress:    completed N:    " + n);

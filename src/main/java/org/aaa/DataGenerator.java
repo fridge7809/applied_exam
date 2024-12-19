@@ -1,15 +1,12 @@
 package org.aaa;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 
 public class DataGenerator {
 
 	private static final Random RANDOM = new Random(1000);
 
-	private static Integer[] generateIntegerArray(int n, Distribution distribution) {
+	private static Integer[] generateIntegerArray(int n, Distribution distribution, int r) {
 		Integer[] array = new Integer[n];
 		switch (distribution) {
 			case UNIFORM -> {
@@ -29,24 +26,24 @@ public class DataGenerator {
 				Arrays.sort(array, Collections.reverseOrder());
 			}
 			case ADAPTIVE -> {
-				ArrayList<Integer> elements = new ArrayList<>();
-				for (int i = 1; i < n / 2; i++) {
-					elements.add(i);
-				}
-				for (int i = n / 2; i > 0; i--) {
-					elements.add(i);
-				}
-
-				int r = 100;
+				List<Integer> list = new ArrayList<>();
 				int elementsPerRun = n / r;
 
-				for (int i = 0; i < r; i++) {
-					for (int j = elementsPerRun * i; j < (elementsPerRun * (i + 1)) - 1; j++) {
-						elements.set(j, (int) Math.pow(-1, i) * elements.get(j));
+				Random rand = new Random();
+				for (int i = 0; i < n; i++) {
+					int length = rand.nextInt(elementsPerRun * 2);
+					if (list.size() + length > n) {
+						length = Math.abs(list.size() - n);
+					}
+					for (int j = 0; j < length / 2; j++) {
+						list.add(j);
+					}
+					for (int j = length / 2; j > 0 / 2; j--) {
+						list.add(j);
 					}
 				}
-				Integer[] res = elements.toArray(new Integer[0]);
-				return res;
+
+				return list.toArray(new Integer[0]);
 			}
 		}
 		return array;
@@ -75,9 +72,9 @@ public class DataGenerator {
 		return array;
 	}
 
-	public static Comparable[] generateDataOfType(InputType type, Distribution distribution, StringContent content, int n) {
+	public static Comparable[] generateDataOfType(InputType type, Distribution distribution, StringContent content, int n, int runs) {
 		return switch (type) {
-			case INTS -> generateIntegerArray(n, distribution);
+			case INTS -> generateIntegerArray(n, distribution, runs);
 			case STRINGS -> generateStringArray(content, n);
 		};
 	}
@@ -98,5 +95,15 @@ public class DataGenerator {
 		FIXED_LENGTH,
 		VARIED_LENGTH,
 		PREFIX
+	}
+
+	public static void main(String[] args) {
+		int N = 1000; // Total number of elements
+		int R = 3;  // Number of runs
+
+		Integer[] array = generateIntegerArray(N, Distribution.ADAPTIVE, R);
+
+		// Print the resulting array
+		System.out.println(Arrays.toString(array));
 	}
 }

@@ -168,7 +168,7 @@ public class MergeSortParallel {
     }
 
     public static <T extends Comparable<T>> int sortParallel(T[] source, int serialSortThreshold) {
-        pool = new ForkJoinPool(6);
+        pool = new ForkJoinPool();
         T[] buffer = (T[]) new Comparable[source.length];
         return sort(source, buffer, 0, source.length - 1, serialSortThreshold);
     }
